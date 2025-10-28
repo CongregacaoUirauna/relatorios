@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Relatório de Campo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --border-color: #ccc;
+            --background-color: #f8f9fa;
+            --form-bg-color: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        body {
+            /* [INDICADOR DE AMBIENTE: TESTE 1] */
+            border-top: 5px solid orange;
+
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--form-bg-color);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px var(--shadow-color);
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Oculta os grupos de campos por padrão */
+        .conditional-fields {
+            display: none;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            margin-top: 10px;
+        }
+        label {
+            margin-bottom: .5rem;
+            font-weight: 500;
+            color: #555;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        input[readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+            font-weight: 500;
+        }
+        .radio-group label {
+            font-weight: 400;
+            margin-bottom: 0;
+            margin-left: 5px;
+        }
+        .radio-group div {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .radio-group input[type="radio"] {
+            width: auto;
+        }
+        
+        /* Feedback e Loading */
+        .feedback {
+            display: none;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            font-weight: 500;
+            text-align: center;
+        }
+        .feedback.success { background-color: #d4edda; color: var(--success-color); border: 1px solid #c3e6cb; }
+        .feedback.error { background-color: #f8d7da; color: var(--error-color); border: 1px solid #f5c6cb; }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .loading::after {
+            content: ''; display: block; width: 20px; height: 20px;
+            border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid var(--primary-color);
+            animation: spin 1s linear infinite; margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        button {
+            width: 100%; padding: 12px; background-color: var(--primary-color);
+            color: #fff; border: none; border-radius: 4px;
+            font-size: 18px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Relatório de Campo</h1>
+        <form id="relatorioForm">
+            <!-- 1. Seleção de Nome (Carregado pela Lista Mestre) -->
+            <div class="form-group">
+                <label for="selectNome">Informe seu nome*</label>
+                <select id="selectNome" name="nome" required>
+                    <option value="">Carregando lista...</option>
+                </select>
+            </div>
+
+            <!-- 2. Mês (Automático) -->
+            <div class="form-group">
+                <label for="mesReferencia">Mês de Referência</label>
+                <input type="text" id="mesReferencia" name="mesReferencia" readonly>
+            </div>
+
+            <!-- 3. Campos Condicionais (Publicador) -->
+            <div class="conditional-fields" id="camposPublicador">
+                <div class="form-group radio-group">
+                    <label>Você participou no ministério (testemunho informal, cartas, carrinho, etc.) nesse mês?*</label>
+                    <div>
+                        <input type="radio" id="participouSim" name="participou" value="Sim" required>
+                        <label for="participouSim">Sim</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="participouNao" name="participou" value="Não">
+                        <label for="participouNao">Não</label>
+                    </div>
+                </div>
+
+                <div class="form-group radio-group">
+                    <label>Você está visitando alguém (estudo)?*</label>
+                    <div>
+                        <input type="radio" id="visitaSim" name="visitaAlguem" value="Sim" required>
+                        <label for="visitaSim">Sim</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="visitaNao" name="visitaAlguem" value="Não">
+                        <label for="visitaNao">Não</label>
+                    </div>
+                </div>
+
+                <!-- 3.1. Campo Aninhado (Quantas Pessoas) -->
+                <div class="form-group conditional-fields" id="campoQuantasPessoas">
+                    <label for="quantosEstudos">Quantas pessoas você está visitando (estudos)?*</label>
+                    <input type="number" id="quantosEstudos" name="quantosEstudos" min="0" value="0">
+                </div>
+            </div>
+
+            <!-- 4. Campos Condicionais (Pioneiro Auxiliar / Regular) -->
+            <div class="conditional-fields" id="camposPioneiro">
+                <div class="form-group">
+                    <label for="horas">Por favor, informe suas horas*</label>
+                    <input type="number" id="horas" name="horas" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Informe quantidade de estudos. (Caso não tenha, digite 0)*</label>
+                    <input type="number" id="estudosPioneiro" name="estudosPioneiro" min="0" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="observacoes">Observações (opcional)</label>
+                    <textarea id="observacoes" name="observacoes" rows="3"></textarea>
+                </div>
+            </div>
+
+            <!-- 5. Envio -->
+            <button type="submit" id="submitBtn">Enviar Relatório</button>
+            <div id="loading" class="loading"></div>
+            <div id="feedback" class="feedback"></div>
+        </form>
+    </div>
+
+    <!-- jQuery para facilitar a lógica condicional -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    
+    <!-- SDK Firebase Modular -->
+    <script type="module">
+        // Importações do Firebase SDK v9+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+        // 1. Configuração do Firebase (O SEU PROJETO NOVO)
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2PtOb7RwgZGXP-zW3vf65AY1ivQ-eySA",
+            authDomain: "relatorio-de-campo-5c837.firebaseapp.com",
+            projectId: "relatorio-de-campo-5c837",
+            storageBucket: "relatorio-de-campo-5c837.firebasestorage.app",
+            messagingSenderId: "11198755551",
+            appId: "1:11198755551:web:6c7d4ab3ff3d860c27ef6a"
+        };
+
+        // Inicializa Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // --- INÍCIO DA LÓGICA DO FORMULÁRIO ---
+        $(function() {
+            const $selectNome = $('#selectNome');
+            const $mesReferencia = $('#mesReferencia');
+            const $camposPublicador = $('#camposPublicador');
+            const $camposPioneiro = $('#camposPioneiro');
+            const $campoQuantasPessoas = $('#campoQuantasPessoas');
+            
+            const $form = $('#relatorioForm');
+            const $submitBtn = $('#submitBtn');
+            const $loading = $('#loading');
+            const $feedback = $('#feedback');
+
+            // --- LÓGICA DE DATA (REGRA DO DIA 20) ---
+            function getMesReferencia() {
+                const hoje = new Date();
+                const dia = hoje.getDate();
+                let dataReferencia = new Date();
+                
+                // Se for dia 20 ou antes, o relatório é do mês passado.
+                if (dia <= 20) {
+                    dataReferencia.setMonth(hoje.getMonth() - 1);
+                }
+                // Se for dia 21 ou depois, é do mês atual (dataReferencia já é 'hoje')
+
+                const mes = dataReferencia.toLocaleString('pt-BR', { month: 'long' });
+                const ano = dataReferencia.getFullYear();
+                // Capitaliza o mês (ex: "outubro" -> "Outubro")
+                const mesCapitalizado = mes.charAt(0).toUpperCase() + mes.slice(1);
+                return `${mesCapitalizado}/${ano}`;
+            }
+
+            // --- LÓGICA DE CARREGAMENTO DE NOMES (TESTE 1) ---
+            // SIMULAÇÃO: No Teste 1, usamos uma lista fixa.
+            // Na Parte 2 (Dashboard), você vai cadastrar essa lista no Firestore.
+            // Na Parte 3 (Produção), vamos trocar isso por uma busca real (getDocs).
+            function carregarNomesSimulado() {
+                console.log("TESTE 1: Usando lista de nomes simulada (hardcoded).");
+                
+                const listaPessoasMock = [
+                    { id: 'teste1', nome: 'Ana (Publicadora Teste)', grupo: 'Publicador' },
+                    { id: 'teste2', nome: 'Bruno (Pioneiro Auxiliar Teste)', grupo: 'Pioneiro Auxiliar' },
+                    { id: 'teste3', nome: 'Carla (Pioneira Regular Teste)', grupo: 'Pioneiro Regular' },
+                    { id: 'teste4', nome: 'Davi (Outro Publicador Teste)', grupo: 'Publicador' }
+                ];
+
+                $selectNome.empty().append('<option value="">Selecione seu nome...</option>');
+                
+                listaPessoasMock.forEach(pessoa => {
+                    $selectNome.append(
+                        // Armazenamos o GRUPO da pessoa no 'data-grupo'
+                        `<option value="${pessoa.nome}" data-grupo="${pessoa.grupo}">${pessoa.nome}</option>`
+                    );
+                });
+            }
+
+            // --- LÓGICA DE EXIBIÇÃO CONDICIONAL ---
+            
+            // 1. Quando o NOME muda
+            $selectNome.on('change', function() {
+                const $selectedOption = $(this).find(':selected');
+                const grupo = $selectedOption.data('grupo'); // Pega o grupo do data-
+
+                // Reseta (esconde) todos os campos
+                $camposPublicador.slideUp();
+                $camposPioneiro.slideUp();
+                $campoQuantasPessoas.hide();
+                
+                // Remove 'required' dos campos escondidos para não bloquear o envio
+                $camposPublicador.find('input, select, textarea').prop('required', false);
+                $camposPioneiro.find('input, select, textarea').prop('required', false);
+
+                if (grupo === 'Publicador') {
+                    $camposPublicador.slideDown();
+                    // Define 'required' para os campos de publicador
+                    $camposPublicador.find('input[name="participou"]').prop('required', true);
+                    $camposPublicador.find('input[name="visitaAlguem"]').prop('required', true);
+                } 
+                else if (grupo === 'Pioneiro Auxiliar' || grupo === 'Pioneiro Regular') {
+                    $camposPioneiro.slideDown();
+                    // Define 'required' para os campos de pioneiro
+                    $('#horas').prop('required', true);
+                    $('#estudosPioneiro').prop('required', true);
+                }
+            });
+
+            // 2. Lógica Aninhada (Quantas Pessoas)
+            $('input[name="visitaAlguem"]').on('change', function() {
+                if (this.value === 'Sim') {
+                    $campoQuantasPessoas.slideDown();
+                    $('#quantosEstudos').prop('required', true);
+                } else {
+                    $campoQuantasPessoas.slideUp();
+                    $('#quantosEstudos').prop('required', false);
+                }
+            });
+
+            // --- LÓGICA DE ENVIO (SUBMIT) ---
+            $form.on('submit', async function(e) {
+                e.preventDefault();
+                $submitBtn.prop('disabled', true);
+                $loading.show();
+                $feedback.hide();
+
+                const $selectedOption = $selectNome.find(':selected');
+                const grupo = $selectedOption.data('grupo');
+                
+                // 1. Monta o objeto de dados
+                const dados = {
+                    nome: $selectNome.val(),
+                    grupo: grupo,
+                    mesReferencia: $mesReferencia.val(),
+                    timestampEnvio: serverTimestamp() // Data/Hora exata do envio
+                };
+
+                // 2. Adiciona campos específicos do grupo
+                if (grupo === 'Publicador') {
+                    dados.participou = $('input[name="participou"]:checked').val();
+                    dados.visitaAlguem = $('input[name="visitaAlguem"]:checked').val();
+                    
+                    // O campo "Estudos" do Publicador é o "quantasPessoas"
+                    if (dados.visitaAlguem === 'Sim') {
+                        dados.estudos = parseInt($('#quantosEstudos').val() || 0);
+                    } else {
+                        dados.estudos = 0;
+                    }
+                } 
+                else if (grupo.startsWith('Pioneiro')) {
+                    dados.horas = parseInt($('#horas').val() || 0);
+                    dados.estudos = parseInt($('#estudosPioneiro').val() || 0);
+                    dados.observacoes = $('#observacoes').val();
+                }
+
+                // 3. Envia para o Firestore
+                try {
+                    const docRef = await addDoc(collection(db, "relatorios"), dados);
+                    console.log("Documento salvo com ID: ", docRef.id);
+                    
+                    $feedback.text('✅ Relatório enviado com sucesso!').removeClass('error').addClass('success').show();
+                    $form[0].reset(); // Limpa o formulário
+                    // Reseta os campos condicionais
+                    $camposPublicador.hide();
+                    $camposPioneiro.hide();
+                    $campoQuantasPessoas.hide();
+                    $mesReferencia.val(getMesReferencia()); // Recalcula o mês
+                    
+                } catch (error) {
+                    console.error("Erro ao salvar no Firestore: ", error);
+                    $feedback.text(`❌ Erro ao enviar: ${error.message}`).removeClass('success').addClass('error').show();
+                } finally {
+                    $submitBtn.prop('disabled', false);
+                    $loading.hide();
+                }
+            });
+
+
+            // --- INICIALIZAÇÃO DA PÁGINA ---
+            $mesReferencia.val(getMesReferencia());
+            carregarNomesSimulado();
+        });
+    </script>
+</body>
+</html>

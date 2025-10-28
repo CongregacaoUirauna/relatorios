@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Relatórios</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warn-color: #ffc107;
+            --border-color: #ccc;
+            --background-color: #f8f9fa;
+            --form-bg-color: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .login-container, .dashboard-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--form-bg-color);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px var(--shadow-color);
+            box-sizing: border-box;
+            margin-top: 20px;
+        }
+        /* [INDICADOR DE AMBIENTE: TESTE 2] */
+        .dashboard-container {
+            border: 5px solid var(--success-color);
+            max-width: 1000px;
+        }
+
+        .dashboard-container { display: none; }
+        h1 { text-align: center; color: var(--primary-color); margin-bottom: 25px; }
+        h2 { color: var(--primary-color); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: .5rem; font-weight: 500; color: #555; }
+        
+        input, select, button {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #logoutBtn {
+            background-color: var(--error-color);
+            width: auto;
+            padding: 8px 15px;
+        }
+        #logoutBtn:hover { background-color: #c82333; }
+
+        .error-message {
+            color: var(--error-color);
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+        #forgotPassword {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        #forgotPassword a {
+            color: var(--primary-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #forgotPassword a:hover { text-decoration: underline; }
+
+        /* Gerenciamento de Pessoas */
+        .admin-section {
+            background-color: #fdfdfd;
+            border: 1px solid #eee;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        #addPessoaForm {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+        #addPessoaForm .form-group { flex: 2; margin-bottom: 0; }
+        #addPessoaForm button { flex: 1; }
+
+        .table-container { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th { background-color: #f4f4f4; }
+        td:last-child {
+            text-align: center;
+            width: 100px;
+        }
+        .delete-btn {
+            background-color: var(--warn-color);
+            color: #333;
+            width: auto;
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+        .delete-btn:hover { background-color: #e0a800; }
+        .group-select {
+            font-size: 14px;
+            padding: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. TELA DE LOGIN -->
+    <div class="login-container" id="loginContainer">
+        <h1>Login do Dashboard</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit">Entrar</button>
+            <div id="loginError" class="error-message"></div>
+            <div id="forgotPassword">
+                <a id="forgotPasswordLink">Esqueci minha senha</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 2. TELA DO DASHBOARD -->
+    <div class="dashboard-container" id="dashboardContainer">
+        <div class="dashboard-header">
+            <h1>Dashboard de Relatórios</h1>
+            <button id="logoutBtn">Sair</button>
+        </div>
+
+        <!-- SEÇÃO: GERENCIAMENTO DE PESSOAS -->
+        <div class="admin-section">
+            <h2>Gerenciar Pessoas</h2>
+            <form id="addPessoaForm">
+                <div class="form-group">
+                    <label for="nomePessoa">Nome</label>
+                    <input type="text" id="nomePessoa" placeholder="Nome completo da pessoa" required>
+                </div>
+                <div class="form-group">
+                    <label for="grupoPessoa">Grupo</label>
+                    <select id="grupoPessoa" required>
+                        <option value="Publicador">Publicador</option>
+                        <option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option>
+                        <option value="Pioneiro Regular">Pioneiro Regular</option>
+                    </select>
+                </div>
+                <button type="submit">Adicionar Pessoa</button>
+            </form>
+
+            <div class="table-container">
+                <table id="pessoasTable">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Grupo Atual</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pessoas-body">
+                        <tr><td colspan="3" style="text-align: center;">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- (Próximas seções: Totais e Pendentes virão na Parte 3) -->
+
+    </div>
+
+    <!-- SDK Firebase Modular -->
+    <script type="module">
+        // Importações do Firebase SDK v9+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            onAuthStateChanged, 
+            signOut,
+            sendPasswordResetEmail // Para "Esqueci a Senha"
+        } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            doc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, // Para carregar a lista em tempo real
+            query,
+            orderBy
+        } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+        // 1. Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2PtOb7RwgZGXP-zW3vf65AY1ivQ-eySA",
+            authDomain: "relatorio-de-campo-5c837.firebaseapp.com",
+            projectId: "relatorio-de-campo-5c837",
+            storageBucket: "relatorio-de-campo-5c837.firebasestorage.app",
+            messagingSenderId: "11198755551",
+            appId: "1:11198755551:web:6c7d4ab3ff3d860c27ef6a"
+        };
+
+        // Inicializa Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Referências do DOM
+        const loginContainer = document.getElementById('loginContainer');
+        const dashboardContainer = document.getElementById('dashboardContainer');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+
+        const addPessoaForm = document.getElementById('addPessoaForm');
+        const nomePessoaInput = document.getElementById('nomePessoa');
+        const grupoPessoaSelect = document.getElementById('grupoPessoa');
+        const pessoasBody = document.getElementById('pessoas-body');
+
+        // --- LÓGICA DE AUTENTICAÇÃO ---
+
+        // 1. Monitorar estado de login
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuário está logado
+                loginContainer.style.display = 'none';
+                dashboardContainer.style.display = 'block';
+                loadPessoas(); // Carrega o gerenciador de pessoas
+            } else {
+                // Usuário está deslogado
+                loginContainer.style.display = 'block';
+                dashboardContainer.style.display = 'none';
+            }
+        });
+
+        // 2. Processar Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            loginError.style.display = 'none';
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged vai cuidar de mostrar o dashboard
+            } catch (error) {
+                console.error("Erro de login: ", error.message);
+                loginError.textContent = "Erro: " + error.message;
+                loginError.style.display = 'block';
+            }
+        });
+
+        // 3. Processar Logout
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // 4. Esqueci a Senha
+        forgotPasswordLink.addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                alert("Por favor, digite seu email no campo 'Email' antes de clicar em 'Esqueci a senha'.");
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert(`Email de redefinição de senha enviado para ${email}. Verifique sua caixa de entrada.`);
+            } catch (error) {
+                alert("Erro ao enviar email: " + error.message);
+            }
+        });
+
+
+        // --- LÓGICA DE GERENCIAMENTO DE PESSOAS (CRUD) ---
+
+        const pessoasCol = collection(db, "pessoas");
+
+        // 1. Adicionar Pessoa (Create)
+        addPessoaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nome = nomePessoaInput.value.trim();
+            const grupo = grupoPessoaSelect.value;
+
+            if (nome === "") return;
+
+            try {
+                await addDoc(pessoasCol, {
+                    nome: nome,
+                    grupo: grupo
+                });
+                addPessoaForm.reset();
+            } catch (error) {
+                console.error("Erro ao adicionar pessoa: ", error);
+                alert("Erro ao adicionar pessoa.");
+            }
+        });
+
+        // 2. Carregar Pessoas (Read) - Em tempo real!
+        function loadPessoas() {
+            const q = query(pessoasCol, orderBy("nome"));
+
+            // onSnapshot ouve mudanças em tempo real (add, edit, delete)
+            onSnapshot(q, (snapshot) => {
+                pessoasBody.innerHTML = ''; // Limpa a tabela
+                if (snapshot.empty) {
+                    pessoasBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhuma pessoa cadastrada. Adicione acima.</td></tr>';
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const pessoa = doc.data();
+                    const docId = doc.id;
+                    
+                    const row = document.createElement('tr');
+                    
+                    // Coluna 1: Nome
+                    const cellNome = document.createElement('td');
+                    cellNome.textContent = pessoa.nome;
+                    
+                    // Coluna 2: Grupo (Editável)
+                    const cellGrupo = document.createElement('td');
+                    const selectGrupo = document.createElement('select');
+                    selectGrupo.className = 'group-select';
+                    selectGrupo.innerHTML = `
+                        <option value="Publicador">Publicador</option>
+                        <option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option>
+                        <option value="Pioneiro Regular">Pioneiro Regular</option>
+                    `;
+                    selectGrupo.value = pessoa.grupo; // Define o valor atual
+                    
+                    // Evento para ATUALIZAR (Update)
+                    selectGrupo.addEventListener('change', async () => {
+                        const novoGrupo = selectGrupo.value;
+                        const docRef = doc(db, "pessoas", docId);
+                        try {
+                            await updateDoc(docRef, { grupo: novoGrupo });
+                        } catch (error) {
+                            console.error("Erro ao atualizar grupo: ", error);
+                        }
+                    });
+                    cellGrupo.appendChild(selectGrupo);
+
+                    // Coluna 3: Ações (Excluir)
+                    const cellAcoes = document.createElement('td');
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Excluir';
+                    deleteBtn.className = 'delete-btn';
+                    
+                    // Evento para EXCLUIR (Delete)
+                    deleteBtn.addEventListener('click', async () => {
+                        if (confirm(`Tem certeza que deseja excluir ${pessoa.nome}?`)) {
+                            const docRef = doc(db, "pessoas", docId);
+                            try {
+                                await deleteDoc(docRef);
+                            } catch (error) {
+                                console.error("Erro ao excluir pessoa: ", error);
+                            }
+                        }
+                    });
+                    cellAcoes.appendChild(deleteBtn);
+
+                    row.appendChild(cellNome);
+                    row.appendChild(cellGrupo);
+                    row.appendChild(cellAcoes);
+                    pessoasBody.appendChild(row);
+                });
+            });
+        }
+
+    </script>
+</body>
+</html>
