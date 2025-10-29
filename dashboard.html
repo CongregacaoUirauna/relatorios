@@ -39,14 +39,16 @@
             box-sizing: border-box;
             margin-top: 20px;
         }
-        /* Versão de produção: largura maior para os relatórios */
         .dashboard-container {
-            max-width: 1200px; 
+            max-width: 1200px;
+            /* [INDICADOR DE AMBIENTE: TESTE 2 (Novos Totais)] */
+            border: 2px solid var(--success-color);
         }
 
         .dashboard-container { display: none; }
         h1 { text-align: center; color: var(--primary-color); margin-bottom: 25px; }
         h2 { color: var(--primary-color); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h3 { margin-top: 0; }
 
         .form-group { margin-bottom: 1.25rem; }
         label { display: block; margin-bottom: .5rem; font-weight: 500; color: #555; }
@@ -150,6 +152,11 @@
         }
 
         /* Seção de Visão Geral e Pendentes */
+        #monthSelectorForm {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
         .reports-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -158,7 +165,8 @@
         
         .totals-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            /* MUDANÇA: 2 colunas para melhor organização */
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
         }
         .total-card {
@@ -179,11 +187,6 @@
             font-size: 24px;
             font-weight: 700;
             color: var(--primary-color);
-        }
-        #monthSelectorForm {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
         }
         
         #pending-list h5 {
@@ -211,8 +214,10 @@
             #monthSelectorForm {
                 flex-direction: column;
             }
+            .totals-grid {
+                grid-template-columns: 1fr;
+            }
         }
-
     </style>
 </head>
 <body>
@@ -244,7 +249,7 @@
             <button id="logoutBtn">Sair</button>
         </div>
 
-        <!-- Seção Visão Geral e Pendentes -->
+        <!-- Seção do Seletor de Mês -->
         <div class="admin-section">
             <h2>Visão Geral do Mês</h2>
             <form id="monthSelectorForm">
@@ -257,23 +262,32 @@
                     <select id="selectAno"></select>
                 </div>
             </form>
+        </div>
 
+        <!-- Seção Visão Geral de Campo e Pendentes -->
+        <div class="admin-section">
             <div class="reports-grid">
-                <!-- Coluna 1: Totais -->
+                <!-- Coluna 1: Totais de Campo -->
                 <div id="totals-section">
-                    <h3>Totais do Mês</h3>
+                    <h3>Totais de Relatório de Campo</h3>
+                    
+                    <!-- MUDANÇA: Cards de Totais Reorganizados -->
                     <div class="totals-grid">
                         <div class="total-card">
                             <h4>Horas (Auxiliares)</h4>
                             <p id="totalHorasAux">0</p>
                         </div>
                         <div class="total-card">
+                            <h4>Estudos (Auxiliares)</h4>
+                            <p id="totalEstudosAux">0</p>
+                        </div>
+                        <div class="total-card">
                             <h4>Horas (Regulares)</h4>
                             <p id="totalHorasReg">0</p>
                         </div>
                         <div class="total-card">
-                            <h4>Estudos (Pioneiros)</h4>
-                            <p id="totalEstudosPio">0</p>
+                            <h4>Estudos (Regulares)</h4>
+                            <p id="totalEstudosReg">0</p>
                         </div>
                         <div class="total-card">
                             <h4>Estudos (Publicadores)</h4>
@@ -283,16 +297,47 @@
                 </div>
                 <!-- Coluna 2: Pendentes -->
                 <div id="pending-section">
-                    <h3>Relatórios Pendentes</h3>
+                    <h3>Relatórios Pendentes de Campo</h3>
                     <div id="pending-list"><p>Carregando...</p></div>
                 </div>
+            </div>
+        </div>
+        
+        <!-- NOVO: Seção Visão Geral de Reuniões -->
+        <div class="admin-section">
+            <h3>Totais de Assistência (Reuniões)</h3>
+            <div class="totals-grid">
+                <div class="total-card">
+                    <h4>Total (Meio de Semana)</h4>
+                    <p id="totalAssistenciaMS">0</p>
+                    <small id="countMS">0 reuniões</small>
+                </div>
+                <div class="total-card">
+                    <h4>Total (Fim de Semana)</h4>
+                    <p id="totalAssistenciaFS">0</p>
+                    <small id="countFS">0 reuniões</small>
+                </div>
+            </div>
+            <div class="table-container" style="margin-top: 20px; max-height: 300px; overflow-y: auto;">
+                <table id="reunioesTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Assistência</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reunioes-body">
+                        <tr><td colspan="3" style="text-align: center;">Carregando...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
 
         <!-- SEÇÃO: GERENCIAMENTO DE PESSOAS -->
         <div class="admin-section">
-            <h2>Gerenciar Pessoas</h2>
+            <h2>Gerenciar Pessoas (Relatório de Campo)</h2>
             <form id="addPessoaForm">
                 <div class="form-group">
                     <label for="nomePessoa">Nome</label>
@@ -345,10 +390,11 @@
             updateDoc, 
             deleteDoc, 
             onSnapshot,
-            getDocs, // Para buscar relatórios
+            getDocs,
             query,
-            where, // Para filtrar por mês
-            orderBy
+            where,
+            orderBy,
+            Timestamp // NOVO: Importa Timestamp para consultas de data
         } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
         // 1. Configuração do Firebase
@@ -379,18 +425,28 @@
         const grupoPessoaSelect = document.getElementById('grupoPessoa');
         const pessoasBody = document.getElementById('pessoas-body');
 
-        // Referências do DOM (Relatórios)
+        // Referências do DOM (Relatórios de Campo)
         const selectMes = document.getElementById('selectMes');
         const selectAno = document.getElementById('selectAno');
         const totalHorasAux = document.getElementById('totalHorasAux');
         const totalHorasReg = document.getElementById('totalHorasReg');
-        const totalEstudosPio = document.getElementById('totalEstudosPio');
+        // MUDANÇA: Novos IDs para totais de estudos
+        const totalEstudosAux = document.getElementById('totalEstudosAux');
+        const totalEstudosReg = document.getElementById('totalEstudosReg');
         const totalEstudosPub = document.getElementById('totalEstudosPub');
         const pendingList = document.getElementById('pending-list');
+
+        // NOVO: Referências do DOM (Relatórios de Reunião)
+        const totalAssistenciaMS = document.getElementById('totalAssistenciaMS');
+        const totalAssistenciaFS = document.getElementById('totalAssistenciaFS');
+        const countMS = document.getElementById('countMS');
+        const countFS = document.getElementById('countFS');
+        const reunioesBody = document.getElementById('reunioes-body');
 
         // Coleções do Firestore
         const pessoasCol = collection(db, "pessoas");
         const relatoriosCol = collection(db, "relatorios");
+        const reunioesCol = collection(db, "reunioes"); // NOVO
 
         // --- LÓGICA DE AUTENTICAÇÃO ---
         onAuthStateChanged(auth, (user) => {
@@ -430,10 +486,12 @@
         });
 
         // --- INICIALIZAÇÃO DO DASHBOARD ---
+        const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        
         function initDashboard() {
             loadPessoas();
             setupMonthSelector();
-            loadReports(); // Carrega os relatórios do mês atual
+            loadAllReports(); // Carrega TODOS os relatórios (campo e reunião)
         }
         
         // --- LÓGICA DE DATA (REGRA DO DIA 20) ---
@@ -454,7 +512,6 @@
 
         // 1. Configura os seletores de Mês/Ano
         function setupMonthSelector() {
-            const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const anoAtual = new Date().getFullYear();
             
             selectMes.innerHTML = '';
@@ -465,40 +522,47 @@
                 selectAno.append(new Option(ano, ano));
             }
 
-            // Define o mês/ano padrão baseado na regra de negócio
             const refAtual = getMesReferenciaAtual();
             selectMes.value = refAtual.mes;
             selectAno.value = refAtual.ano;
 
-            // Adiciona listeners para recarregar os dados ao mudar
-            selectMes.addEventListener('change', loadReports);
-            selectAno.addEventListener('change', loadReports);
+            // MUDANÇA: Adiciona listener para carregar TODOS os relatórios
+            selectMes.addEventListener('change', loadAllReports);
+            selectAno.addEventListener('change', loadAllReports);
         }
 
-        // 2. Carrega os relatórios (o "cérebro" do dashboard)
-        async function loadReports() {
+        // 2. Função principal para carregar TODOS os dados
+        function loadAllReports() {
+            loadFieldReports();
+            loadMeetingReports();
+        }
+
+        // 3. Carrega os relatórios de CAMPO (com totais corrigidos)
+        async function loadFieldReports() {
             const mesSelecionado = selectMes.value;
             const anoSelecionado = selectAno.value;
             const mesReferencia = `${mesSelecionado}/${anoSelecionado}`;
 
-            // Reseta os contadores
+            // MUDANÇA: Reseta os contadores (totais corrigidos)
             let totais = {
-                horasAux: 0, horasReg: 0, estudosPio: 0, estudosPub: 0
+                horasAux: 0, estudosAux: 0,
+                horasReg: 0, estudosReg: 0,
+                estudosPub: 0
             };
             pendingList.innerHTML = '<p>Calculando...</p>';
 
             try {
-                // Passo 1: Buscar TODOS os relatórios do mês selecionado
+                // Passo 1: Buscar relatórios de campo do mês selecionado
                 const q = query(relatoriosCol, where("mesReferencia", "==", mesReferencia));
                 const relatoriosSnapshot = await getDocs(q);
 
-                const relatoriosEnviados = new Map(); // Mapa para performance (Nome -> dados)
+                const relatoriosEnviados = new Map();
                 
                 relatoriosSnapshot.forEach(doc => {
                     const relatorio = doc.data();
                     relatoriosEnviados.set(relatorio.nome, relatorio);
 
-                    // Passo 2: Calcular Totais
+                    // Passo 2: Calcular Totais (LÓGICA CORRIGIDA)
                     const grupo = relatorio.grupo;
                     const estudos = relatorio.estudos || 0;
                     const horas = relatorio.horas || 0;
@@ -507,57 +571,45 @@
                         totais.estudosPub += estudos;
                     } else if (grupo === 'Pioneiro Auxiliar') {
                         totais.horasAux += horas;
-                        totais.estudosPio += estudos;
+                        totais.estudosAux += estudos;
                     } else if (grupo === 'Pioneiro Regular') {
                         totais.horasReg += horas;
-                        totais.estudosPio += estudos;
+                        totais.estudosReg += estudos;
                     }
                 });
 
-                // Atualiza os cards de Totais na tela
+                // Atualiza os cards de Totais (LÓGICA CORRIGIDA)
                 totalHorasAux.textContent = totais.horasAux;
+                totalEstudosAux.textContent = totais.estudosAux;
                 totalHorasReg.textContent = totais.horasReg;
-                totalEstudosPio.textContent = totais.estudosPio;
+                totalEstudosReg.textContent = totais.estudosReg;
                 totalEstudosPub.textContent = totais.estudosPub;
 
-                // Passo 3: Calcular Pendentes
+                // Passo 3: Calcular Pendentes (função auxiliar não mudou)
                 await calcularPendentes(relatoriosEnviados);
 
             } catch (error) {
-                console.error("Erro ao carregar relatórios: ", error);
+                console.error("Erro ao carregar relatórios de campo: ", error);
                 pendingList.innerHTML = '<p style="color: red;">Erro ao carregar pendentes.</p>';
             }
         }
         
-        // 3. Função Auxiliar: Calcular Pendentes
+        // 4. Função Auxiliar: Calcular Pendentes (sem alteração)
         async function calcularPendentes(relatoriosEnviados) {
-            let pendentes = {
-                Publicador: [],
-                "Pioneiro Auxiliar": [],
-                "Pioneiro Regular": []
-            };
-            
-            // Busca a lista mestre de pessoas
+            let pendentes = { Publicador: [], "Pioneiro Auxiliar": [], "Pioneiro Regular": [] };
             const pessoasSnapshot = await getDocs(query(pessoasCol, orderBy("nome")));
 
             if (pessoasSnapshot.empty) {
-                pendingList.innerHTML = '<p>Nenhuma pessoa cadastrada para calcular pendentes.</p>';
-                return;
+                pendingList.innerHTML = '<p>Nenhuma pessoa cadastrada.</p>'; return;
             }
-
             pessoasSnapshot.forEach(doc => {
                 const pessoa = doc.data();
-                // Verifica se a pessoa NÃO ESTÁ no mapa de quem já enviou
                 if (!relatoriosEnviados.has(pessoa.nome)) {
-                    if (pendentes[pessoa.grupo]) {
-                        pendentes[pessoa.grupo].push(pessoa.nome);
-                    }
+                    if (pendentes[pessoa.grupo]) { pendentes[pessoa.grupo].push(pessoa.nome); }
                 }
             });
 
-            // Passo 4: Exibir lista de pendentes na tela
             let htmlPendentes = '';
-            
             if (pendentes.Publicador.length > 0) {
                 htmlPendentes += '<h5>Publicadores</h5><ul>' + pendentes.Publicador.map(n => `<li>${n}</li>`).join('') + '</ul>';
             }
@@ -567,11 +619,74 @@
             if (pendentes["Pioneiro Regular"].length > 0) {
                 htmlPendentes += '<h5>Pioneiros Regulares</h5><ul>' + pendentes["Pioneiro Regular"].map(n => `<li>${n}</li>`).join('') + '</ul>';
             }
-
             if (htmlPendentes === '') {
-                pendingList.innerHTML = '<p style="color: green;">✅ Todos os relatórios do mês foram enviados!</p>';
+                pendingList.innerHTML = '<p style="color: green;">✅ Todos os relatórios de campo foram enviados!</p>';
             } else {
                 pendingList.innerHTML = htmlPendentes;
+            }
+        }
+
+        // 5. NOVO: Carrega os relatórios de REUNIÃO
+        async function loadMeetingReports() {
+            const mesIndex = meses.indexOf(selectMes.value); // Ex: "Outubro" -> 9
+            const ano = parseInt(selectAno.value);
+            
+            // Cria os Timestamps de início e fim do mês
+            // Início: 1º dia do mês, 00:00:00
+            const inicioMes = Timestamp.fromDate(new Date(ano, mesIndex, 1));
+            // Fim: Último dia do mês, 23:59:59
+            const fimMes = Timestamp.fromDate(new Date(ano, mesIndex + 1, 0, 23, 59, 59));
+
+            // Reseta os contadores
+            let totalMS = 0; let countMSval = 0;
+            let totalFS = 0; let countFSval = 0;
+            reunioesBody.innerHTML = '';
+
+            try {
+                // Busca reuniões ONDE dataTimestamp está ENTRE inicioMes E fimMes
+                const q = query(reunioesCol,
+                    where("dataTimestamp", ">=", inicioMes),
+                    where("dataTimestamp", "<=", fimMes),
+                    orderBy("dataTimestamp", "desc") // Mais recentes primeiro
+                );
+                
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    reunioesBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhuma reunião registrada para este mês.</td></tr>';
+                }
+
+                snapshot.forEach(doc => {
+                    const reuniao = doc.data();
+                    const quantidade = reuniao.quantidade || 0;
+                    
+                    // Adiciona à tabela
+                    const row = reunioesBody.insertRow();
+                    row.innerHTML = `
+                        <td>${reuniao.data}</td>
+                        <td>${reuniao.tipo}</td>
+                        <td>${quantidade}</td>
+                    `;
+                    
+                    // Soma aos totais
+                    if (reuniao.tipo === 'Meio de Semana') {
+                        totalMS += quantidade;
+                        countMSval++;
+                    } else if (reuniao.tipo === 'Fim de Semana') {
+                        totalFS += quantidade;
+                        countFSval++;
+                    }
+                });
+                
+                // Atualiza os cards de Totais de Reunião
+                totalAssistenciaMS.textContent = totalMS;
+                countMS.textContent = `${countMSval} reuniões`;
+                totalAssistenciaFS.textContent = totalFS;
+                countFS.textContent = `${countFSval} reuniões`;
+
+            } catch (error) {
+                console.error("Erro ao carregar relatórios de reunião: ", error);
+                reunioesBody.innerHTML = '<tr><td colspan="3" style="color: red;">Erro ao carregar reuniões.</td></tr>';
             }
         }
 
@@ -592,7 +707,6 @@
 
         function loadPessoas() {
             const q = query(pessoasCol, orderBy("nome"));
-            // onSnapshot ouve mudanças em tempo real (add, edit, delete)
             onSnapshot(q, (snapshot) => {
                 pessoasBody.innerHTML = '';
                 if (snapshot.empty) {
@@ -605,11 +719,9 @@
                     
                     const row = document.createElement('tr');
                     
-                    // Coluna 1: Nome
                     const cellNome = document.createElement('td');
                     cellNome.textContent = pessoa.nome;
                     
-                    // Coluna 2: Grupo (Editável)
                     const cellGrupo = document.createElement('td');
                     const selectGrupo = document.createElement('select');
                     selectGrupo.className = 'group-select';
@@ -618,9 +730,8 @@
                         <option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option>
                         <option value="Pioneiro Regular">Pioneiro Regular</option>
                     `;
-                    selectGrupo.value = pessoa.grupo; // Define o valor atual
+                    selectGrupo.value = pessoa.grupo;
                     
-                    // Evento para ATUALIZAR (Update)
                     selectGrupo.addEventListener('change', async () => {
                         const docRef = doc(db, "pessoas", docId);
                         try {
@@ -631,13 +742,11 @@
                     });
                     cellGrupo.appendChild(selectGrupo);
 
-                    // Coluna 3: Ações (Excluir)
                     const cellAcoes = document.createElement('td');
                     const deleteBtn = document.createElement('button');
                     deleteBtn.textContent = 'Excluir';
                     deleteBtn.className = 'delete-btn';
                     
-                    // Evento para EXCLUIR (Delete)
                     deleteBtn.addEventListener('click', async () => {
                         if (confirm(`Tem certeza que deseja excluir ${pessoa.nome}?`)) {
                             const docRef = doc(db, "pessoas", docId);
@@ -656,9 +765,8 @@
                     pessoasBody.appendChild(row);
                 });
 
-                // Recarrega os relatórios caso uma pessoa seja adicionada/removida
-                // (isso atualiza a lista de pendentes)
-                loadReports(); 
+                // Recarrega os relatórios de campo (para pendentes)
+                loadFieldReports(); 
             });
         }
     </script>
