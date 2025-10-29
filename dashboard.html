@@ -39,10 +39,9 @@
             box-sizing: border-box;
             margin-top: 20px;
         }
-        /* [INDICADOR DE AMBIENTE: TESTE 2] */
+        /* Versão de produção: largura maior para os relatórios */
         .dashboard-container {
-            border: 5px solid var(--success-color);
-            max-width: 1000px;
+            max-width: 1200px; 
         }
 
         .dashboard-container { display: none; }
@@ -102,21 +101,24 @@
         }
         #forgotPassword a:hover { text-decoration: underline; }
 
-        /* Gerenciamento de Pessoas */
         .admin-section {
             background-color: #fdfdfd;
             border: 1px solid #eee;
             padding: 20px;
             border-radius: 8px;
+            margin-bottom: 30px; 
         }
+
+        /* Gerenciamento de Pessoas */
         #addPessoaForm {
             display: flex;
             gap: 15px;
             align-items: flex-end;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
-        #addPessoaForm .form-group { flex: 2; margin-bottom: 0; }
-        #addPessoaForm button { flex: 1; }
+        #addPessoaForm .form-group { flex: 2; margin-bottom: 0; min-width: 200px; }
+        #addPessoaForm button { flex: 1; min-width: 150px; }
 
         .table-container { overflow-x: auto; }
         table {
@@ -145,6 +147,70 @@
         .group-select {
             font-size: 14px;
             padding: 5px;
+        }
+
+        /* Seção de Visão Geral e Pendentes */
+        .reports-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .totals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .total-card {
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .total-card h4 {
+            margin: 0 0 5px 0;
+            color: #555;
+            font-size: 14px;
+        }
+        .total-card p {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        #monthSelectorForm {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        #pending-list h5 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-top: 15px;
+        }
+        #pending-list ul {
+            padding-left: 20px;
+            font-size: 14px;
+        }
+        
+        /* Ajustes de Responsividade */
+        @media (max-width: 900px) {
+            .reports-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 600px) {
+            #addPessoaForm {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #monthSelectorForm {
+                flex-direction: column;
+            }
         }
 
     </style>
@@ -177,6 +243,52 @@
             <h1>Dashboard de Relatórios</h1>
             <button id="logoutBtn">Sair</button>
         </div>
+
+        <!-- Seção Visão Geral e Pendentes -->
+        <div class="admin-section">
+            <h2>Visão Geral do Mês</h2>
+            <form id="monthSelectorForm">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="selectMes">Mês</label>
+                    <select id="selectMes"></select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="selectAno">Ano</label>
+                    <select id="selectAno"></select>
+                </div>
+            </form>
+
+            <div class="reports-grid">
+                <!-- Coluna 1: Totais -->
+                <div id="totals-section">
+                    <h3>Totais do Mês</h3>
+                    <div class="totals-grid">
+                        <div class="total-card">
+                            <h4>Horas (Auxiliares)</h4>
+                            <p id="totalHorasAux">0</p>
+                        </div>
+                        <div class="total-card">
+                            <h4>Horas (Regulares)</h4>
+                            <p id="totalHorasReg">0</p>
+                        </div>
+                        <div class="total-card">
+                            <h4>Estudos (Pioneiros)</h4>
+                            <p id="totalEstudosPio">0</p>
+                        </div>
+                        <div class="total-card">
+                            <h4>Estudos (Publicadores)</h4>
+                            <p id="totalEstudosPub">0</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Coluna 2: Pendentes -->
+                <div id="pending-section">
+                    <h3>Relatórios Pendentes</h3>
+                    <div id="pending-list"><p>Carregando...</p></div>
+                </div>
+            </div>
+        </div>
+
 
         <!-- SEÇÃO: GERENCIAMENTO DE PESSOAS -->
         <div class="admin-section">
@@ -212,9 +324,6 @@
                 </table>
             </div>
         </div>
-
-        <!-- (Próximas seções: Totais e Pendentes virão na Parte 3) -->
-
     </div>
 
     <!-- SDK Firebase Modular -->
@@ -226,7 +335,7 @@
             signInWithEmailAndPassword, 
             onAuthStateChanged, 
             signOut,
-            sendPasswordResetEmail // Para "Esqueci a Senha"
+            sendPasswordResetEmail
         } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
         import { 
             getFirestore, 
@@ -235,8 +344,10 @@
             doc, 
             updateDoc, 
             deleteDoc, 
-            onSnapshot, // Para carregar a lista em tempo real
+            onSnapshot,
+            getDocs, // Para buscar relatórios
             query,
+            where, // Para filtrar por mês
             orderBy
         } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
@@ -250,12 +361,11 @@
             appId: "1:11198755551:web:6c7d4ab3ff3d860c27ef6a"
         };
 
-        // Inicializa Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Referências do DOM
+        // Referências do DOM (Login)
         const loginContainer = document.getElementById('loginContainer');
         const dashboardContainer = document.getElementById('dashboardContainer');
         const loginForm = document.getElementById('loginForm');
@@ -263,104 +373,235 @@
         const logoutBtn = document.getElementById('logoutBtn');
         const forgotPasswordLink = document.getElementById('forgotPasswordLink');
 
+        // Referências do DOM (Gerenciador de Pessoas)
         const addPessoaForm = document.getElementById('addPessoaForm');
         const nomePessoaInput = document.getElementById('nomePessoa');
         const grupoPessoaSelect = document.getElementById('grupoPessoa');
         const pessoasBody = document.getElementById('pessoas-body');
 
-        // --- LÓGICA DE AUTENTICAÇÃO ---
+        // Referências do DOM (Relatórios)
+        const selectMes = document.getElementById('selectMes');
+        const selectAno = document.getElementById('selectAno');
+        const totalHorasAux = document.getElementById('totalHorasAux');
+        const totalHorasReg = document.getElementById('totalHorasReg');
+        const totalEstudosPio = document.getElementById('totalEstudosPio');
+        const totalEstudosPub = document.getElementById('totalEstudosPub');
+        const pendingList = document.getElementById('pending-list');
 
-        // 1. Monitorar estado de login
+        // Coleções do Firestore
+        const pessoasCol = collection(db, "pessoas");
+        const relatoriosCol = collection(db, "relatorios");
+
+        // --- LÓGICA DE AUTENTICAÇÃO ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Usuário está logado
                 loginContainer.style.display = 'none';
                 dashboardContainer.style.display = 'block';
-                loadPessoas(); // Carrega o gerenciador de pessoas
+                initDashboard();
             } else {
-                // Usuário está deslogado
                 loginContainer.style.display = 'block';
                 dashboardContainer.style.display = 'none';
             }
         });
-
-        // 2. Processar Login
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             loginError.style.display = 'none';
-
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged vai cuidar de mostrar o dashboard
             } catch (error) {
-                console.error("Erro de login: ", error.message);
                 loginError.textContent = "Erro: " + error.message;
                 loginError.style.display = 'block';
             }
         });
-
-        // 3. Processar Logout
-        logoutBtn.addEventListener('click', () => {
-            signOut(auth);
-        });
-
-        // 4. Esqueci a Senha
+        logoutBtn.addEventListener('click', () => signOut(auth));
         forgotPasswordLink.addEventListener('click', async () => {
             const email = document.getElementById('email').value;
             if (!email) {
-                alert("Por favor, digite seu email no campo 'Email' antes de clicar em 'Esqueci a senha'.");
-                return;
+                alert("Por favor, digite seu email no campo 'Email' antes de clicar."); return;
             }
             try {
                 await sendPasswordResetEmail(auth, email);
-                alert(`Email de redefinição de senha enviado para ${email}. Verifique sua caixa de entrada.`);
+                alert(`Email de redefinição enviado para ${email}.`);
             } catch (error) {
-                alert("Erro ao enviar email: " + error.message);
+                alert("Erro: " + error.message);
             }
         });
 
+        // --- INICIALIZAÇÃO DO DASHBOARD ---
+        function initDashboard() {
+            loadPessoas();
+            setupMonthSelector();
+            loadReports(); // Carrega os relatórios do mês atual
+        }
+        
+        // --- LÓGICA DE DATA (REGRA DO DIA 20) ---
+        function getMesReferenciaAtual() {
+            const hoje = new Date();
+            const dia = hoje.getDate();
+            let dataReferencia = new Date();
+            if (dia <= 20) {
+                dataReferencia.setMonth(hoje.getMonth() - 1);
+            }
+            const mes = dataReferencia.toLocaleString('pt-BR', { month: 'long' });
+            const ano = dataReferencia.getFullYear();
+            const mesCapitalizado = mes.charAt(0).toUpperCase() + mes.slice(1);
+            return { mes: mesCapitalizado, ano: ano, formatado: `${mesCapitalizado}/${ano}` };
+        }
+
+        // --- LÓGICA DE RELATÓRIOS (TOTAIS E PENDENTES) ---
+
+        // 1. Configura os seletores de Mês/Ano
+        function setupMonthSelector() {
+            const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const anoAtual = new Date().getFullYear();
+            
+            selectMes.innerHTML = '';
+            meses.forEach(mes => selectMes.append(new Option(mes, mes)));
+            
+            selectAno.innerHTML = '';
+            for (let ano = anoAtual; ano >= anoAtual - 2; ano--) {
+                selectAno.append(new Option(ano, ano));
+            }
+
+            // Define o mês/ano padrão baseado na regra de negócio
+            const refAtual = getMesReferenciaAtual();
+            selectMes.value = refAtual.mes;
+            selectAno.value = refAtual.ano;
+
+            // Adiciona listeners para recarregar os dados ao mudar
+            selectMes.addEventListener('change', loadReports);
+            selectAno.addEventListener('change', loadReports);
+        }
+
+        // 2. Carrega os relatórios (o "cérebro" do dashboard)
+        async function loadReports() {
+            const mesSelecionado = selectMes.value;
+            const anoSelecionado = selectAno.value;
+            const mesReferencia = `${mesSelecionado}/${anoSelecionado}`;
+
+            // Reseta os contadores
+            let totais = {
+                horasAux: 0, horasReg: 0, estudosPio: 0, estudosPub: 0
+            };
+            pendingList.innerHTML = '<p>Calculando...</p>';
+
+            try {
+                // Passo 1: Buscar TODOS os relatórios do mês selecionado
+                const q = query(relatoriosCol, where("mesReferencia", "==", mesReferencia));
+                const relatoriosSnapshot = await getDocs(q);
+
+                const relatoriosEnviados = new Map(); // Mapa para performance (Nome -> dados)
+                
+                relatoriosSnapshot.forEach(doc => {
+                    const relatorio = doc.data();
+                    relatoriosEnviados.set(relatorio.nome, relatorio);
+
+                    // Passo 2: Calcular Totais
+                    const grupo = relatorio.grupo;
+                    const estudos = relatorio.estudos || 0;
+                    const horas = relatorio.horas || 0;
+
+                    if (grupo === 'Publicador') {
+                        totais.estudosPub += estudos;
+                    } else if (grupo === 'Pioneiro Auxiliar') {
+                        totais.horasAux += horas;
+                        totais.estudosPio += estudos;
+                    } else if (grupo === 'Pioneiro Regular') {
+                        totais.horasReg += horas;
+                        totais.estudosPio += estudos;
+                    }
+                });
+
+                // Atualiza os cards de Totais na tela
+                totalHorasAux.textContent = totais.horasAux;
+                totalHorasReg.textContent = totais.horasReg;
+                totalEstudosPio.textContent = totais.estudosPio;
+                totalEstudosPub.textContent = totais.estudosPub;
+
+                // Passo 3: Calcular Pendentes
+                await calcularPendentes(relatoriosEnviados);
+
+            } catch (error) {
+                console.error("Erro ao carregar relatórios: ", error);
+                pendingList.innerHTML = '<p style="color: red;">Erro ao carregar pendentes.</p>';
+            }
+        }
+        
+        // 3. Função Auxiliar: Calcular Pendentes
+        async function calcularPendentes(relatoriosEnviados) {
+            let pendentes = {
+                Publicador: [],
+                "Pioneiro Auxiliar": [],
+                "Pioneiro Regular": []
+            };
+            
+            // Busca a lista mestre de pessoas
+            const pessoasSnapshot = await getDocs(query(pessoasCol, orderBy("nome")));
+
+            if (pessoasSnapshot.empty) {
+                pendingList.innerHTML = '<p>Nenhuma pessoa cadastrada para calcular pendentes.</p>';
+                return;
+            }
+
+            pessoasSnapshot.forEach(doc => {
+                const pessoa = doc.data();
+                // Verifica se a pessoa NÃO ESTÁ no mapa de quem já enviou
+                if (!relatoriosEnviados.has(pessoa.nome)) {
+                    if (pendentes[pessoa.grupo]) {
+                        pendentes[pessoa.grupo].push(pessoa.nome);
+                    }
+                }
+            });
+
+            // Passo 4: Exibir lista de pendentes na tela
+            let htmlPendentes = '';
+            
+            if (pendentes.Publicador.length > 0) {
+                htmlPendentes += '<h5>Publicadores</h5><ul>' + pendentes.Publicador.map(n => `<li>${n}</li>`).join('') + '</ul>';
+            }
+            if (pendentes["Pioneiro Auxiliar"].length > 0) {
+                htmlPendentes += '<h5>Pioneiros Auxiliares</h5><ul>' + pendentes["Pioneiro Auxiliar"].map(n => `<li>${n}</li>`).join('') + '</ul>';
+            }
+            if (pendentes["Pioneiro Regular"].length > 0) {
+                htmlPendentes += '<h5>Pioneiros Regulares</h5><ul>' + pendentes["Pioneiro Regular"].map(n => `<li>${n}</li>`).join('') + '</ul>';
+            }
+
+            if (htmlPendentes === '') {
+                pendingList.innerHTML = '<p style="color: green;">✅ Todos os relatórios do mês foram enviados!</p>';
+            } else {
+                pendingList.innerHTML = htmlPendentes;
+            }
+        }
+
 
         // --- LÓGICA DE GERENCIAMENTO DE PESSOAS (CRUD) ---
-
-        const pessoasCol = collection(db, "pessoas");
-
-        // 1. Adicionar Pessoa (Create)
         addPessoaForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const nome = nomePessoaInput.value.trim();
             const grupo = grupoPessoaSelect.value;
-
             if (nome === "") return;
-
             try {
-                await addDoc(pessoasCol, {
-                    nome: nome,
-                    grupo: grupo
-                });
+                await addDoc(pessoasCol, { nome: nome, grupo: grupo });
                 addPessoaForm.reset();
             } catch (error) {
-                console.error("Erro ao adicionar pessoa: ", error);
                 alert("Erro ao adicionar pessoa.");
             }
         });
 
-        // 2. Carregar Pessoas (Read) - Em tempo real!
         function loadPessoas() {
             const q = query(pessoasCol, orderBy("nome"));
-
             // onSnapshot ouve mudanças em tempo real (add, edit, delete)
             onSnapshot(q, (snapshot) => {
-                pessoasBody.innerHTML = ''; // Limpa a tabela
+                pessoasBody.innerHTML = '';
                 if (snapshot.empty) {
-                    pessoasBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhuma pessoa cadastrada. Adicione acima.</td></tr>';
+                    pessoasBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhuma pessoa cadastrada.</td></tr>';
                     return;
                 }
-                
-                snapshot.forEach(doc => {
-                    const pessoa = doc.data();
-                    const docId = doc.id;
+                snapshot.forEach(docSnapshot => {
+                    const pessoa = docSnapshot.data();
+                    const docId = docSnapshot.id;
                     
                     const row = document.createElement('tr');
                     
@@ -381,10 +622,9 @@
                     
                     // Evento para ATUALIZAR (Update)
                     selectGrupo.addEventListener('change', async () => {
-                        const novoGrupo = selectGrupo.value;
                         const docRef = doc(db, "pessoas", docId);
                         try {
-                            await updateDoc(docRef, { grupo: novoGrupo });
+                            await updateDoc(docRef, { grupo: selectGrupo.value });
                         } catch (error) {
                             console.error("Erro ao atualizar grupo: ", error);
                         }
@@ -415,9 +655,13 @@
                     row.appendChild(cellAcoes);
                     pessoasBody.appendChild(row);
                 });
+
+                // Recarrega os relatórios caso uma pessoa seja adicionada/removida
+                // (isso atualiza a lista de pendentes)
+                loadReports(); 
             });
         }
-
     </script>
 </body>
 </html>
+
