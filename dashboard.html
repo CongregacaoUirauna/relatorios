@@ -3,52 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - V2.3</title>
+    <title>Painel Admin - V2.5</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
         body {
-            /* [V2.3] Fundo suave padrão do Bootstrap */
             background-color: #f8f9fa;
         }
-
-        /* --- Estilo dos Cards de Total --- */
-        .card-total {
-            text-align: center;
-        }
-        .card-total .display-6 {
-            font-weight: 600;
-        }
-        .card-total small {
-            color: #6c757d;
-            font-size: 1rem;
-            font-weight: 500;
-        }
-
-        /* --- CSS para a Edição de Nome (Feature V2) --- */
+        .card-total { text-align: center; }
+        .card-total .display-6 { font-weight: 600; }
+        .card-total small { color: #6c757d; font-size: 1rem; font-weight: 500; }
         .nome-input { display: none; }
         .nome-text.editing { display: none; }
         .nome-text.editing + .nome-input { display: inline-block; width: 70%; }
         .edit-buttons { display: none; }
         .default-buttons.editing { display: none; }
         .edit-buttons.editing { display: inline-flex; gap: 5px; }
-        
-        /* --- Estilo para a nova tabela de relatórios --- */
         .table-reports { font-size: 0.9rem; }
         .table-reports th { font-weight: 600; }
-
-        /* [V2.3] Estilo para as Abas Principais (Design Suave) */
         .main-task-tabs .nav-link {
             font-size: 1.15rem;
             padding-top: 0.8rem;
             padding-bottom: 0.8rem;
-            color: #6c757d; /* Cinza suave para abas inativas */
+            color: #6c757d; 
             border: 0;
             border-bottom: 3px solid transparent;
         }
         .main-task-tabs .nav-link.active {
-            color: #0d6efd; /* Cor primária */
+            color: #0d6efd; 
             font-weight: 500;
             background-color: transparent;
             border-bottom: 3px solid #0d6efd;
@@ -57,7 +40,11 @@
             color: #0d6efd;
             border-bottom: 3px solid #dee2e6;
         }
-        
+        /* [V2.5] Botões de ação da tabela mais sutis */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -86,7 +73,7 @@
         
         <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Painel Admin V2.3</a>
+                <a class="navbar-brand" href="#">Painel Admin V2.5</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -121,9 +108,7 @@
             <div class="tab-content" id="mainTasksTabContent">
                 
                 <div class="tab-pane fade show active" id="task-analysis-pane" role="tabpanel" aria-labelledby="task-analysis-tab" tabindex="0">
-                    
                     <div id="analysis" class="card p-3 p-md-4 border-0 shadow-sm">
-                        
                         <div class="row g-3 mb-3 p-3 bg-light border rounded">
                             <div class="col-md-5">
                                 <label for="selectMes" class="form-label">Mês</label>
@@ -160,56 +145,14 @@
                                         <div class="p-3 border border-top-0 rounded-bottom">
                                             <h6 class="text-muted">Totais Agregados</h6>
                                             <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <div class="card card-total h-100">
-                                                        <div class="card-body">
-                                                            <h6 class="card-title text-muted">Horas (Auxiliares)</h6>
-                                                            <p class="display-6 text-primary" id="totalHorasAux">0</p>
-                                                            <small id="countHorasAux">0 relataram</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <div class="card card-total h-100">
-                                                        <div class="card-body">
-                                                            <h6 class="card-title text-muted">Estudos (Auxiliares)</h6>
-                                                            <p class="display-6 text-primary" id="totalEstudosAux">0</p>
-                                                            <small id="countEstudosAux">0 relataram</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <div class="card card-total h-100">
-                                                        <div class="card-body">
-                                                            <h6 class="card-title text-muted">Horas (Regulares)</h6>
-                                                            <p class="display-6 text-primary" id="totalHorasReg">0</p>
-                                                            <small id="countHorasReg">0 relataram</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <div class="card card-total h-100">
-                                                        <div class="card-body">
-                                                            <h6 class="card-title text-muted">Estudos (Regulares)</h6>
-                                                            <p class="display-6 text-primary" id="totalEstudosReg">0</p>
-                                                            <small id="countEstudosReg">0 relataram</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-12 mb-3">
-                                                    <div class="card card-total h-100">
-                                                        <div class="card-body">
-                                                            <h6 class="card-title text-muted">Estudos (Publicadores)</h6>
-                                                            <p class="display-6 text-primary" id="totalEstudosPub">0</p>
-                                                            <small id="countEstudosPub">0 relataram</small>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Horas (Auxiliares)</h6><p class="display-6 text-primary" id="totalHorasAux">0</p><small id="countHorasAux">0 relataram</small></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Auxiliares)</h6><p class="display-6 text-primary" id="totalEstudosAux">0</p><small id="countEstudosAux">0 relataram</small></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Horas (Regulares)</h6><p class="display-6 text-primary" id="totalHorasReg">0</p><small id="countHorasReg">0 relataram</small></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Regulares)</h6><p class="display-6 text-primary" id="totalEstudosReg">0</p><small id="countEstudosReg">0 relataram</small></div></div></div>
+                                                <div class="col-12 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Publicadores)</h6><p class="display-6 text-primary" id="totalEstudosPub">0</p><small id="countEstudosPub">0 relataram</small></div></div></div>
                                             </div>
-        
                                             <h6 class="text-muted mt-3">Pendentes de Relatório</h6>
-                                            <div id="pendentes-body" style="max-height: 300px; overflow-y: auto;">
-                                                </div>
+                                            <div id="pendentes-body" style="max-height: 300px; overflow-y: auto;"></div>
                                         </div>
                                     </div>
                                     
@@ -217,7 +160,7 @@
                                         <div class="p-3 border border-top-0 rounded-bottom">
                                             <h6 class="text-muted">Lista de Envios Individuais</h6>
                                             <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-                                                <table class="table table-sm table-striped table-hover table-reports">
+                                                <table class="table table-sm table-striped table-hover table-reports align-middle">
                                                     <thead>
                                                         <tr>
                                                             <th>Nome</th>
@@ -226,6 +169,7 @@
                                                             <th>Estudos</th>
                                                             <th>Participou?</th>
                                                             <th>Observações</th>
+                                                            <th style="width: 100px;">Ações</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="relatorios-enviados-body">
@@ -240,34 +184,19 @@
                             <div class="col-lg-5 border-start">
                                 <h5 class="border-bottom pb-2 mb-3">Relatório de Assistência</h5>
                                 <div class="row">
-                                    <div class="col-6 mb-3">
-                                        <div class="card card-total h-100">
-                                            <div class="card-body">
-                                                <h6 class="card-title text-muted">Meio de Semana</h6>
-                                                <p class="display-6 text-success" id="totalMeioSemana">0</p>
-                                                <small id="countMeioSemana">0 reuniões</small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 mb-3">
-                                        <div class="card card-total h-100">
-                                            <div class="card-body">
-                                                <h6 class="card-title text-muted">Fim de Semana</h6>
-                                                <p class="display-6 text-success" id="totalFimSemana">0</p>
-                                                <small id="countFimSemana">0 reuniões</small>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <div class="col-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Meio de Semana</h6><p class="display-6 text-success" id="totalMeioSemana">0</p><small id="countMeioSemana">0 reuniões</small></div></div></div>
+                                    <div class="col-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Fim de Semana</h6><p class="display-6 text-success" id="totalFimSemana">0</p><small id="countFimSemana">0 reuniões</small></div></div></div>
                                 </div>
         
                                 <h5 class="border-bottom pb-2 mb-3">Lista de Reuniões (Mês)</h5>
                                 <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                                    <table class="table table-sm table-striped">
+                                    <table class="table table-sm table-striped align-middle">
                                         <thead>
                                             <tr>
                                                 <th>Data</th>
                                                 <th>Tipo</th>
                                                 <th>Qtd.</th>
+                                                <th style="width: 100px;">Ações</th>
                                             </tr>
                                         </thead>
                                         <tbody id="reunioes-body">
@@ -276,8 +205,10 @@
                                 </div>
                             </div>
                         </div>
-                    </div> </div> <div class="tab-pane fade" id="task-manager-pane" role="tabpanel" aria-labelledby="task-manager-tab" tabindex="0">
-                    
+                    </div> 
+                </div> 
+
+                <div class="tab-pane fade" id="task-manager-pane" role="tabpanel" aria-labelledby="task-manager-tab" tabindex="0">
                     <div id="manager" class="card p-3 p-md-4 border-0 shadow-sm">
                         <h4><i class="bi bi-people-fill"></i> Gerenciar Pessoas (Lista Mestra)</h4>
                         <p>Aqui você gerencia quem pode enviar relatórios e a qual grupo pertencem.</p>
@@ -314,8 +245,30 @@
                                     </tbody>
                             </table>
                         </div>
-                    </div> </div> </div> </main>
+                    </div> 
+                </div> 
+
+            </div> 
+        </main>
     </div>
+
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="editModalLabel">Editar Registro</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="editModalBody">
+                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="editModalSaveButton">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -323,7 +276,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        // [PRODUÇÃO V2.3] (JS V2.1 - Sem alterações na lógica)
+        // [PRODUÇÃO V2.5] (JS V2.1 + Lógica de CRUD)
 
         // --- 1. Configuração do Firebase ---
         const firebaseConfig = {
@@ -344,6 +297,7 @@
         const reunioesCol = db.collection("reunioes");
 
         // --- 3. Elementos do DOM ---
+        // (DOM principal)
         const loginContainer = document.getElementById("loginContainer");
         const dashboardContainer = document.getElementById("dashboardContainer");
         const loginForm = document.getElementById("loginForm");
@@ -362,13 +316,18 @@
         const pendentesBody = document.getElementById("pendentes-body");
         const relatoriosEnviadosBody = document.getElementById("relatorios-enviados-body");
         const reunioesBody = document.getElementById("reunioes-body");
-
         const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+        // [V2.5] Elementos do Modal
+        const editModalEl = document.getElementById('editModal');
+        const editModal = new bootstrap.Modal(editModalEl);
+        const editModalLabel = document.getElementById('editModalLabel');
+        const editModalBody = document.getElementById('editModalBody');
+        const editModalSaveButton = document.getElementById('editModalSaveButton');
 
         // =================================================================
         // 4. LÓGICA DE AUTENTICAÇÃO (Sem Alterações)
         // =================================================================
-
         auth.onAuthStateChanged(user => {
             if (user) {
                 loginContainer.style.display = "none";
@@ -381,49 +340,13 @@
                 userEmail.textContent = "";
             }
         });
-
-        loginForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const email = document.getElementById("loginEmail").value;
-            const password = document.getElementById("loginPassword").value;
-            loginError.style.display = "none";
-            loginSuccess.style.display = "none";
-            auth.signInWithEmailAndPassword(email, password)
-                .catch(error => {
-                    loginError.textContent = "Email ou senha inválidos. Tente novamente.";
-                    loginError.style.display = "block";
-                });
-        });
-
-        logoutButton.addEventListener("click", () => {
-            auth.signOut();
-        });
-
-        forgotPasswordLink.addEventListener("click", (e) => {
-            e.preventDefault();
-            const email = document.getElementById("loginEmail").value;
-            if (!email) {
-                loginError.textContent = "Digite seu email no campo 'Email' para redefinir a senha.";
-                loginError.style.display = "block";
-                return;
-            }
-            loginError.style.display = "none";
-            loginSuccess.style.display = "none";
-            auth.sendPasswordResetEmail(email)
-                .then(() => {
-                    loginSuccess.textContent = "Email de redefinição de senha enviado para " + email;
-                    loginSuccess.style.display = "block";
-                })
-                .catch(error => {
-                    loginError.textContent = "Erro ao enviar email de redefinição. Verifique o email.";
-                    loginError.style.display = "block";
-                });
-        });
+        loginForm.addEventListener("submit", (e) => { e.preventDefault(); const email = document.getElementById("loginEmail").value; const password = document.getElementById("loginPassword").value; loginError.style.display = "none"; loginSuccess.style.display = "none"; auth.signInWithEmailAndPassword(email, password).catch(error => { loginError.textContent = "Email ou senha inválidos. Tente novamente."; loginError.style.display = "block"; }); });
+        logoutButton.addEventListener("click", () => { auth.signOut(); });
+        forgotPasswordLink.addEventListener("click", (e) => { e.preventDefault(); const email = document.getElementById("loginEmail").value; if (!email) { loginError.textContent = "Digite seu email no campo 'Email' para redefinir a senha."; loginError.style.display = "block"; return; } loginError.style.display = "none"; loginSuccess.style.display = "none"; auth.sendPasswordResetEmail(email).then(() => { loginSuccess.textContent = "Email de redefinição de senha enviado para " + email; loginSuccess.style.display = "block"; }).catch(error => { loginError.textContent = "Erro ao enviar email de redefinição. Verifique o email."; loginError.style.display = "block"; }); });
 
         // =================================================================
         // 5. LÓGICA DO DASHBOARD (Inicialização) (Sem Alterações)
         // =================================================================
-
         function initDashboard() {
             populateDateSelectors();
             loadPessoasCRUD();
@@ -431,63 +354,13 @@
             addPessoaForm.addEventListener("submit", handleAddPessoa);
             loadReportsButton.addEventListener("click", loadAllReports);
         }
-        
-        function populateDateSelectors() {
-            const hoje = new Date();
-            const mesAtual = hoje.getMonth();
-            const anoAtual = hoje.getFullYear();
-
-            nomesMeses.forEach((nome, index) => {
-                const option = document.createElement("option");
-                option.value = index; 
-                option.textContent = nome;
-                if (index === mesAtual) option.selected = true;
-                selectMes.appendChild(option);
-            });
-
-            for (let i = anoAtual; i >= anoAtual - 3; i--) {
-                const option = document.createElement("option");
-                option.value = i;
-                option.textContent = i;
-                if (i === anoAtual) option.selected = true;
-                selectAno.appendChild(option);
-            }
-        }
+        function populateDateSelectors() { const hoje = new Date(); const mesAtual = hoje.getMonth(); const anoAtual = hoje.getFullYear(); nomesMeses.forEach((nome, index) => { const option = document.createElement("option"); option.value = index; option.textContent = nome; if (index === mesAtual) option.selected = true; selectMes.appendChild(option); }); for (let i = anoAtual; i >= anoAtual - 3; i--) { const option = document.createElement("option"); option.value = i; option.textContent = i; if (i === anoAtual) option.selected = true; selectAno.appendChild(option); } }
 
         // =================================================================
         // 6. CRUD (GERENCIAMENTO DE PESSOAS) (Sem Alterações)
         // =================================================================
-
-        async function handleAddPessoa(e) {
-            e.preventDefault();
-            const nomeInput = document.getElementById("addNome");
-            const grupoInput = document.getElementById("addGrupo");
-            const nome = nomeInput.value.trim();
-            const grupo = grupoInput.value;
-            if (!nome) return;
-            try {
-                await pessoasCol.add({ nome: nome, grupo: grupo });
-                nomeInput.value = ''; 
-            } catch (error) {
-                console.error("Erro ao adicionar pessoa: ", error);
-                alert("Erro ao adicionar pessoa.");
-            }
-        }
-
-        function loadPessoasCRUD() {
-            pessoasCol.orderBy("nome").onSnapshot(snapshot => {
-                pessoasBody.innerHTML = ""; 
-                if (snapshot.empty) {
-                    pessoasBody.innerHTML = '<tr><td colspan="3">Nenhuma pessoa cadastrada.</td></tr>';
-                    return;
-                }
-                snapshot.forEach(doc => {
-                    const pessoa = doc.data();
-                    const id = doc.id;
-                    const row = document.createElement("tr");
-                    row.dataset.id = id; 
-                    // [V2.3] HTML dos botões atualizado para o novo design
-                    row.innerHTML = `
+        async function handleAddPessoa(e) { e.preventDefault(); const nomeInput = document.getElementById("addNome"); const grupoInput = document.getElementById("addGrupo"); const nome = nomeInput.value.trim(); const grupo = grupoInput.value; if (!nome) return; try { await pessoasCol.add({ nome: nome, grupo: grupo }); nomeInput.value = ''; } catch (error) { console.error("Erro ao adicionar pessoa: ", error); alert("Erro ao adicionar pessoa."); } }
+        function loadPessoasCRUD() { pessoasCol.orderBy("nome").onSnapshot(snapshot => { pessoasBody.innerHTML = ""; if (snapshot.empty) { pessoasBody.innerHTML = '<tr><td colspan="3">Nenhuma pessoa cadastrada.</td></tr>'; return; } snapshot.forEach(doc => { const pessoa = doc.data(); const id = doc.id; const row = document.createElement("tr"); row.dataset.id = id; row.innerHTML = `
                         <td>
                             <span class="nome-text">${pessoa.nome}</span>
                             <input type="text" class="form-control form-control-sm nome-input" value="${pessoa.nome}">
@@ -517,96 +390,38 @@
                                 </button>
                             </div>
                         </td>
-                    `;
-                    pessoasBody.appendChild(row);
-                });
-            }, error => {
-                console.error("Erro ao carregar pessoas (snapshot): ", error);
-                alert("Erro crítico ao carregar a lista de pessoas.");
-            });
-        }
-
-        window.handleUpdateGrupo = async (id, novoGrupo) => {
-            try {
-                await pessoasCol.doc(id).update({ grupo: novoGrupo });
-            } catch (error) {
-                console.error("Erro ao atualizar grupo: ", error);
-            }
-        };
-        
-        window.toggleEditNome = (button, cancel = false) => {
-            const row = button.closest('tr');
-            const nomeText = row.querySelector('.nome-text');
-            const nomeInput = row.querySelector('.nome-input');
-            const defaultButtons = row.querySelector('.default-buttons');
-            const editButtons = row.querySelector('.edit-buttons');
-            if (cancel) {
-                nomeInput.value = nomeText.textContent;
-            }
-            nomeText.classList.toggle('editing');
-            nomeInput.classList.toggle('editing');
-            defaultButtons.classList.toggle('editing');
-            editButtons.classList.toggle('editing');
-        };
-
-        window.handleUpdateNome = async (button, id) => {
-            const row = button.closest('tr');
-            const nomeInput = row.querySelector('.nome-input');
-            const novoNome = nomeInput.value.trim();
-            if (!novoNome) return;
-            try {
-                await pessoasCol.doc(id).update({ nome: novoNome });
-                window.toggleEditNome(button, false); 
-            } catch (error) {
-                console.error("Erro ao atualizar nome: ", error);
-            }
-        };
-
-        window.handleDeletePessoa = async (id, nome) => {
-            if (confirm(`Tem certeza que deseja excluir ${nome}?`)) {
-                try {
-                    await pessoasCol.doc(id).delete();
-                } catch (error) {
-                    console.error("Erro ao excluir pessoa: ", error);
-                }
-            }
-        };
+                    `; pessoasBody.appendChild(row); }); }, error => { console.error("Erro ao carregar pessoas (snapshot): ", error); alert("Erro crítico ao carregar a lista de pessoas."); }); }
+        window.handleUpdateGrupo = async (id, novoGrupo) => { try { await pessoasCol.doc(id).update({ grupo: novoGrupo }); } catch (error) { console.error("Erro ao atualizar grupo: ", error); } };
+        window.toggleEditNome = (button, cancel = false) => { const row = button.closest('tr'); const nomeText = row.querySelector('.nome-text'); const nomeInput = row.querySelector('.nome-input'); const defaultButtons = row.querySelector('.default-buttons'); const editButtons = row.querySelector('.edit-buttons'); if (cancel) { nomeInput.value = nomeText.textContent; } nomeText.classList.toggle('editing'); nomeInput.classList.toggle('editing'); defaultButtons.classList.toggle('editing'); editButtons.classList.toggle('editing'); };
+        window.handleUpdateNome = async (button, id) => { const row = button.closest('tr'); const nomeInput = row.querySelector('.nome-input'); const novoNome = nomeInput.value.trim(); if (!novoNome) return; try { await pessoasCol.doc(id).update({ nome: novoNome }); window.toggleEditNome(button, false); } catch (error) { console.error("Erro ao atualizar nome: ", error); } };
+        window.handleDeletePessoa = async (id, nome) => { if (confirm(`Tem certeza que deseja excluir ${nome}?`)) { try { await pessoasCol.doc(id).delete(); } catch (error) { console.error("Erro ao excluir pessoa: ", error); } } };
 
         // =================================================================
-        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS (Sem Alterações)
+        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS (Refatorada V2.5)
         // =================================================================
 
         function resetAnalysisUI() {
-            // Cards de Campo
-            ['totalHorasAux', 'totalEstudosAux', 'totalHorasReg', 'totalEstudosReg', 'totalEstudosPub'].forEach(id => {
-                document.getElementById(id).textContent = '0';
-            });
-            ['countHorasAux', 'countEstudosAux', 'countHorasReg', 'countEstudosReg', 'countEstudosPub'].forEach(id => {
-                document.getElementById(id).textContent = '0 relataram';
-            });
-            // Cards de Reunião
-            document.getElementById('totalMeioSemana').textContent = '0';
-            document.getElementById('totalFimSemana').textContent = '0';
-            document.getElementById('countMeioSemana').textContent = '0 reuniões';
-            document.getElementById('countFimSemana').textContent = '0 reuniões';
+            // (Cards - Sem alteração)
+            ['totalHorasAux', 'totalEstudosAux', 'totalHorasReg', 'totalEstudosReg', 'totalEstudosPub'].forEach(id => { document.getElementById(id).textContent = '0'; });
+            ['countHorasAux', 'countEstudosAux', 'countHorasReg', 'countEstudosReg', 'countEstudosPub'].forEach(id => { document.getElementById(id).textContent = '0 relataram'; });
+            document.getElementById('totalMeioSemana').textContent = '0'; document.getElementById('totalFimSemana').textContent = '0';
+            document.getElementById('countMeioSemana').textContent = '0 reuniões'; document.getElementById('countFimSemana').textContent = '0 reuniões';
             
             // Tabelas
             pendentesBody.innerHTML = '<p class="text-muted">Carregando...</p>';
-            reunioesBody.innerHTML = '<tr><td colspan="3" class="text-muted">Carregando...</td></tr>';
-            relatoriosEnviadosBody.innerHTML = '<tr><td colspan="6" class="text-muted">Carregando...</td></tr>';
+            // [V2.5] Atualizado colspan para novas colunas de ação
+            reunioesBody.innerHTML = '<tr><td colspan="4" class="text-muted">Carregando...</td></tr>';
+            relatoriosEnviadosBody.innerHTML = '<tr><td colspan="7" class="text-muted">Carregando...</td></tr>';
         }
 
         async function loadAllReports() {
             resetAnalysisUI();
             setLoadButtonLoading(true);
-            
             const mesIndex = parseInt(selectMes.value); 
             const ano = parseInt(selectAno.value);
             const mesReferencia = `${nomesMeses[mesIndex]}/${ano}`;
-
             const startDate = new Date(ano, mesIndex, 1, 0, 0, 0);
             const endDate = new Date(ano, mesIndex + 1, 0, 23, 59, 59);
-
             try {
                 await Promise.all([
                     loadFieldReports(mesReferencia),
@@ -619,9 +434,9 @@
             }
         }
 
+        // [V2.5] MODIFICADO: Consulta e Cálculo de Relatórios de CAMPO
         async function loadFieldReports(mesReferencia) {
             relatoriosEnviadosBody.innerHTML = ''; 
-            
             try {
                 const pessoasSnapshot = await pessoasCol.get();
                 const allPessoas = new Map(); 
@@ -631,22 +446,19 @@
 
                 const relatoriosSnapshot = await relatoriosCol.where("mesReferencia", "==", mesReferencia).get();
                 
-                let totais = {
-                    horasAux: 0, estudosAux: 0, countAux: 0,
-                    horasReg: 0, estudosReg: 0, countReg: 0,
-                    estudosPub: 0, countPub: 0
-                };
-                
+                let totais = { horasAux: 0, estudosAux: 0, countAux: 0, horasReg: 0, estudosReg: 0, countReg: 0, estudosPub: 0, countPub: 0 };
                 const nomesQueEnviaram = new Set(); 
 
                 if (relatoriosSnapshot.empty) {
-                    relatoriosEnviadosBody.innerHTML = '<tr><td colspan="6" class="text-muted">Nenhum relatório enviado para este mês.</td></tr>';
+                    relatoriosEnviadosBody.innerHTML = '<tr><td colspan="7" class="text-muted">Nenhum relatório enviado para este mês.</td></tr>';
                 }
 
                 relatoriosSnapshot.forEach(doc => {
                     const rel = doc.data();
+                    const id = doc.id;
                     nomesQueEnviaram.add(rel.nome);
 
+                    // Agrega totais
                     if (rel.grupo === "Pioneiro Auxiliar") {
                         totais.horasAux += (rel.horas || 0);
                         totais.estudosAux += (rel.estudos || 0);
@@ -662,82 +474,53 @@
                         }
                     }
 
+                    // Popula a tabela de Grid
                     const row = document.createElement('tr');
+                    // [V2.5] Adiciona data-id para manipulação do DOM
+                    row.dataset.id = id; 
                     row.innerHTML = `
-                        <td>${rel.nome}</td>
-                        <td>${rel.grupo}</td>
-                        <td>${rel.horas || '—'}</td>
-                        <td>${rel.estudos || 0}</td>
-                        <td>${rel.participou || '—'}</td>
-                        <td>${rel.observacoes || ''}</td>
+                        <td data-field="nome">${rel.nome}</td>
+                        <td data-field="grupo">${rel.grupo}</td>
+                        <td data-field="horas">${rel.horas || '—'}</td>
+                        <td data-field="estudos">${rel.estudos || 0}</td>
+                        <td data-field="participou">${rel.participou || '—'}</td>
+                        <td data-field="observacoes">${rel.observacoes || ''}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-outline-primary btn-sm" onclick="window.openEditRelatorioModal('${id}')">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="window.deleteRelatorio('${id}', '${rel.nome}')">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        </td>
                     `;
                     relatoriosEnviadosBody.appendChild(row);
                 });
 
-                document.getElementById('totalHorasAux').textContent = totais.horasAux;
-                document.getElementById('totalEstudosAux').textContent = totais.estudosAux;
-                document.getElementById('totalHorasReg').textContent = totais.horasReg;
-                document.getElementById('totalEstudosReg').textContent = totais.estudosReg;
-                document.getElementById('totalEstudosPub').textContent = totais.estudosPub;
-                
-                document.getElementById('countHorasAux').textContent = `${totais.countAux} relataram`;
-                document.getElementById('countEstudosAux').textContent = `${totais.countAux} relataram`;
-                document.getElementById('countHorasReg').textContent = `${totais.countReg} relataram`;
-                document.getElementById('countEstudosReg').textContent = `${totais.countReg} relataram`;
-                document.getElementById('countEstudosPub').textContent = `${totais.countPub} relataram`;
+                // (Atualiza Cards de Totais - Sem alteração)
+                document.getElementById('totalHorasAux').textContent = totais.horasAux; document.getElementById('totalEstudosAux').textContent = totais.estudosAux; document.getElementById('totalHorasReg').textContent = totais.horasReg; document.getElementById('totalEstudosReg').textContent = totais.estudosReg; document.getElementById('totalEstudosPub').textContent = totais.estudosPub;
+                document.getElementById('countHorasAux').textContent = `${totais.countAux} relataram`; document.getElementById('countEstudosAux').textContent = `${totais.countAux} relataram`; document.getElementById('countHorasReg').textContent = `${totais.countReg} relataram`; document.getElementById('countEstudosReg').textContent = `${totais.countReg} relataram`; document.getElementById('countEstudosPub').textContent = `${totais.countPub} relataram`;
                 
                 renderPendentes(allPessoas, nomesQueEnviaram);
 
             } catch (error) {
                 console.error("Erro ao carregar relatórios de campo: ", error);
                 pendentesBody.innerHTML = '<p class="text-danger">Erro ao carregar pendentes.</p>';
-                relatoriosEnviadosBody.innerHTML = '<tr><td colspan="6" class="text-danger">Erro ao carregar relatórios.</td></tr>';
+                relatoriosEnviadosBody.innerHTML = '<tr><td colspan="7" class="text-danger">Erro ao carregar relatórios.</td></tr>';
             }
         }
         
-        function renderPendentes(allPessoas, nomesQueEnviaram) {
-            const pendentes = {
-                "Publicador": [],
-                "Pioneiro Auxiliar": [],
-                "Pioneiro Regular": []
-            };
+        // (Renderização de Pendentes - Sem Alteração)
+        function renderPendentes(allPessoas, nomesQueEnviaram) { const pendentes = { "Publicador": [], "Pioneiro Auxiliar": [], "Pioneiro Regular": [] }; allPessoas.forEach((grupo, nome) => { if (!nomesQueEnviaram.has(nome)) { if (pendentes.hasOwnProperty(grupo)) { pendentes[grupo].push(nome); } } }); pendentesBody.innerHTML = ''; let totalPendentes = 0; const gruposParaExibir = ["Pioneiro Regular", "Pioneiro Auxiliar", "Publicador"]; gruposParaExibir.forEach(grupo => { const lista = pendentes[grupo]; if (lista.length > 0) { totalPendentes += lista.length; let html = `<h6 class="text-muted">${grupo} (${lista.length})</h6><ul class="list-group list-group-flush mb-3">`; lista.sort().forEach(nome => { html += `<li class="list-group-item py-1">${nome}</li>`; }); html += `</ul>`; pendentesBody.innerHTML += html; } }); if (totalPendentes === 0) { pendentesBody.innerHTML = '<p class="text-success">Todos enviaram o relatório!</p>'; } }
 
-            allPessoas.forEach((grupo, nome) => {
-                if (!nomesQueEnviaram.has(nome)) {
-                    if (pendentes.hasOwnProperty(grupo)) {
-                        pendentes[grupo].push(nome);
-                    }
-                }
-            });
-
-            pendentesBody.innerHTML = ''; 
-            let totalPendentes = 0;
-            const gruposParaExibir = ["Pioneiro Regular", "Pioneiro Auxiliar", "Publicador"];
-            
-            gruposParaExibir.forEach(grupo => {
-                const lista = pendentes[grupo];
-                if (lista.length > 0) {
-                    totalPendentes += lista.length;
-                    let html = `<h6 class="text-muted">${grupo} (${lista.length})</h6><ul class="list-group list-group-flush mb-3">`;
-                    lista.sort().forEach(nome => { 
-                        html += `<li class="list-group-item py-1">${nome}</li>`;
-                    });
-                    html += `</ul>`;
-                    pendentesBody.innerHTML += html;
-                }
-            });
-            
-            if (totalPendentes === 0) {
-                pendentesBody.innerHTML = '<p class="text-success">Todos enviaram o relatório!</p>';
-            }
-        }
-
+        // [V2.5] MODIFICADO: Relatórios de REUNIÃO
         async function loadMeetingReports(startDate, endDate) {
             reunioesBody.innerHTML = '';
             try {
                 const startTimestamp = firebase.firestore.Timestamp.fromDate(startDate);
                 const endTimestamp = firebase.firestore.Timestamp.fromDate(endDate);
-
                 const q = reunioesCol
                     .where("dataTimestamp", ">=", startTimestamp)
                     .where("dataTimestamp", "<=", endTimestamp)
@@ -745,56 +528,269 @@
 
                 const snapshot = await q.get();
 
-                let totalMeioSemana = 0;
-                let countMeioSemana = 0;
-                let totalFimSemana = 0;
-                let countFimSemana = 0;
+                let totalMeioSemana = 0; let countMeioSemana = 0;
+                let totalFimSemana = 0; let countFimSemana = 0;
 
                 if (snapshot.empty) {
-                    reunioesBody.innerHTML = '<tr><td colspan="3" class="text-muted">Nenhuma reunião encontrada.</td></tr>';
+                    reunioesBody.innerHTML = '<tr><td colspan="4" class="text-muted">Nenhuma reunião encontrada.</td></tr>';
                 }
 
                 snapshot.forEach(doc => {
                     const reuniao = doc.data();
+                    const id = doc.id;
                     const row = document.createElement('tr');
+                    // [V2.5] Adiciona data-id para manipulação do DOM
+                    row.dataset.id = id;
                     row.innerHTML = `
-                        <td>${reuniao.data}</td>
-                        <td>${reuniao.tipo}</td>
-                        <td><strong>${reuniao.quantidade}</strong></td>
+                        <td data-field="data">${reuniao.data}</td>
+                        <td data-field="tipo">${reuniao.tipo}</td>
+                        <td data-field="quantidade"><strong>${reuniao.quantidade}</strong></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-outline-primary btn-sm" onclick="window.openEditReuniaoModal('${id}')">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="window.deleteReuniao('${id}', '${reuniao.data}')">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                        </td>
                     `;
                     reunioesBody.appendChild(row);
 
                     if (reuniao.tipo === "Meio de Semana") {
-                        totalMeioSemana += reuniao.quantidade;
-                        countMeioSemana++;
+                        totalMeioSemana += reuniao.quantidade; countMeioSemana++;
                     } else if (reuniao.tipo === "Fim de Semana") {
-                        totalFimSemana += reuniao.quantidade;
-                        countFimSemana++;
+                        totalFimSemana += reuniao.quantidade; countFimSemana++;
                     }
                 });
 
-                document.getElementById('totalMeioSemana').textContent = totalMeioSemana;
-                document.getElementById('totalFimSemana').textContent = totalFimSemana;
-                document.getElementById('countMeioSemana').textContent = `${countMeioSemana} reuniões`;
-                document.getElementById('countFimSemana').textContent = `${countFimSemana} reuniões`;
+                document.getElementById('totalMeioSemana').textContent = totalMeioSemana; document.getElementById('totalFimSemana').textContent = totalFimSemana;
+                document.getElementById('countMeioSemana').textContent = `${countMeioSemana} reuniões`; document.getElementById('countFimSemana').textContent = `${countFimSemana} reuniões`;
 
             } catch (error) {
                 console.error("Erro ao carregar relatórios de reunião: ", error);
-                reunioesBody.innerHTML = '<tr><td colspan="3" class="text-danger">Erro ao carregar lista.</td></tr>';
+                reunioesBody.innerHTML = '<tr><td colspan="4" class="text-danger">Erro ao carregar lista.</td></tr>';
             }
         }
+        
+        // (Função utilitária - Sem Alterações)
+        function setLoadButtonLoading(isLoading) { if (isLoading) { loadReportsButton.disabled = true; loadButtonText.style.display = 'none'; loadButtonSpinner.style.display = 'inline-block'; } else { loadReportsButton.disabled = false; loadButtonText.style.display = 'inline-block'; loadButtonSpinner.style.display = 'none'; } }
 
-        function setLoadButtonLoading(isLoading) {
-            if (isLoading) {
-                loadReportsButton.disabled = true;
-                loadButtonText.style.display = 'none';
-                loadButtonSpinner.style.display = 'inline-block';
-            } else {
-                loadReportsButton.disabled = false;
-                loadButtonText.style.display = 'inline-block';
-                loadButtonSpinner.style.display = 'none';
+        // =================================================================
+        // 8. [V2.5] NOVAS FUNÇÕES CRUD PARA RELATÓRIOS
+        // =================================================================
+
+        // --- Funções de Exclusão ---
+
+        window.deleteRelatorio = async (id, nome) => {
+            if (!confirm(`Tem certeza que deseja excluir o relatório de ${nome}?`)) return;
+            try {
+                await relatoriosCol.doc(id).delete();
+                // Remove a linha da tabela sem precisar recarregar
+                document.querySelector(`#relatorios-enviados-body tr[data-id="${id}"]`).remove();
+                // Alerta (opcional): alert("Relatório excluído");
+            } catch (error) {
+                console.error("Erro ao excluir relatório: ", error);
+                alert("Falha ao excluir o relatório.");
             }
-        }
+        };
+        
+        window.deleteReuniao = async (id, data) => {
+            if (!confirm(`Tem certeza que deseja excluir a reunião do dia ${data}?`)) return;
+            try {
+                await reunioesCol.doc(id).delete();
+                // Remove a linha da tabela sem precisar recarregar
+                document.querySelector(`#reunioes-body tr[data-id="${id}"]`).remove();
+            } catch (error) {
+                console.error("Erro ao excluir reunião: ", error);
+                alert("Falha ao excluir a reunião.");
+            }
+        };
+
+        // --- Funções de Edição (Relatório de Campo) ---
+
+        window.openEditRelatorioModal = async (id) => {
+            try {
+                const doc = await relatoriosCol.doc(id).get();
+                if (!doc.exists) {
+                    alert("Erro: Relatório não encontrado.");
+                    return;
+                }
+                const rel = doc.data();
+                
+                editModalLabel.textContent = `Editar Relatório: ${rel.nome}`;
+                
+                let modalHtml = '';
+                
+                // Gera o formulário do modal dinamicamente com base no grupo
+                if (rel.grupo === "Pioneiro Auxiliar" || rel.grupo === "Pioneiro Regular") {
+                    modalHtml = `
+                        <p><strong>Grupo:</strong> ${rel.grupo}</p>
+                        <div class="mb-3">
+                            <label for="modal_p_horas" class="form-label">Total de Horas:</label>
+                            <input type="number" id="modal_p_horas" class="form-control" value="${rel.horas || 0}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="modal_p_estudos" class="form-label">Estudos Bíblicos:</label>
+                            <input type="number" id="modal_p_estudos" class="form-control" value="${rel.estudos || 0}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="modal_p_observacoes" class="form-label">Observações:</label>
+                            <textarea id="modal_p_observacoes" class="form-control" rows="3">${rel.observacoes || ''}</textarea>
+                        </div>
+                    `;
+                } else if (rel.grupo === "Publicador") {
+                    modalHtml = `
+                        <p><strong>Grupo:</strong> ${rel.grupo}</p>
+                        <div class="mb-3">
+                            <label class="form-label">Participou no ministério?</label>
+                            <div class="form-check">
+                                <input type="radio" name="modal_participou" id="modal_participouSim" value="Sim" class="form-check-input" ${rel.participou === 'Sim' ? 'checked' : ''}>
+                                <label for="modal_participouSim" class="form-check-label">Sim</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="radio" name="modal_participou" id="modal_participouNao" value="Não" class="form-check-input" ${rel.participou === 'Não' ? 'checked' : ''}>
+                                <label for="modal_participouNao" class="form-check-label">Não</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modal_pub_estudos" class="form-label">Estudos Bíblicos:</label>
+                            <input type="number" id="modal_pub_estudos" class="form-control" value="${rel.estudos || 0}">
+                        </div>
+                    `;
+                }
+                
+                editModalBody.innerHTML = modalHtml;
+                editModalSaveButton.onclick = () => window.saveRelatorio(id, rel.grupo);
+                editModal.show();
+
+            } catch (error) {
+                console.error("Erro ao abrir modal de relatório: ", error);
+                alert("Falha ao carregar dados para edição.");
+            }
+        };
+
+        window.saveRelatorio = async (id, grupo) => {
+            try {
+                const updateData = {};
+                
+                // Coleta dados do modal
+                if (grupo === "Pioneiro Auxiliar" || grupo === "Pioneiro Regular") {
+                    updateData.horas = Number(document.getElementById("modal_p_horas").value) || 0;
+                    updateData.estudos = Number(document.getElementById("modal_p_estudos").value) || 0;
+                    updateData.observacoes = document.getElementById("modal_p_observacoes").value || "";
+                } else if (grupo === "Publicador") {
+                    updateData.participou = document.querySelector('input[name="modal_participou"]:checked').value;
+                    updateData.estudos = Number(document.getElementById("modal_pub_estudos").value) || 0;
+                }
+
+                await relatoriosCol.doc(id).update(updateData);
+                
+                // Atualiza a tabela no DOM
+                const row = document.querySelector(`#relatorios-enviados-body tr[data-id="${id}"]`);
+                if (row) {
+                    if (updateData.horas !== undefined) row.querySelector('[data-field="horas"]').textContent = updateData.horas;
+                    if (updateData.estudos !== undefined) row.querySelector('[data-field="estudos"]').textContent = updateData.estudos;
+                    if (updateData.observacoes !== undefined) row.querySelector('[data-field="observacoes"]').textContent = updateData.observacoes;
+                    if (updateData.participou !== undefined) row.querySelector('[data-field="participou"]').textContent = updateData.participou;
+                }
+                
+                editModal.hide();
+
+            } catch (error) {
+                console.error("Erro ao salvar relatório: ", error);
+                alert("Falha ao salvar. Tente novamente.");
+            }
+        };
+
+        // --- Funções de Edição (Relatório de Reunião) ---
+
+        window.openEditReuniaoModal = async (id) => {
+            try {
+                const doc = await reunioesCol.doc(id).get();
+                if (!doc.exists) {
+                    alert("Erro: Reunião não encontrada.");
+                    return;
+                }
+                const reuniao = doc.data();
+
+                // Converte a data "DD/MM/YYYY" para "YYYY-MM-DD"
+                const dataParts = reuniao.data.split('/');
+                const dataISO = `${dataParts[2]}-${dataParts[1]}-${dataParts[0]}`;
+                
+                editModalLabel.textContent = `Editar Reunião: ${reuniao.data}`;
+                
+                editModalBody.innerHTML = `
+                    <div class="mb-3">
+                        <label for="modal_reuniao_tipo" class="form-label">Tipo:</label>
+                        <select id="modal_reuniao_tipo" class="form-select">
+                            <option value="Meio de Semana" ${reuniao.tipo === 'Meio de Semana' ? 'selected' : ''}>Meio de Semana</option>
+                            <option value="Fim de Semana" ${reuniao.tipo === 'Fim de Semana' ? 'selected' : ''}>Fim de Semana</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modal_reuniao_data" class="form-label">Data:</label>
+                        <input type="date" id="modal_reuniao_data" class="form-control" value="${dataISO}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modal_reuniao_qtd" class="form-label">Quantidade:</label>
+                        <input type="number" id="modal_reuniao_qtd" class="form-control" value="${reuniao.quantidade || 0}">
+                    </div>
+                `;
+                
+                editModalSaveButton.onclick = () => window.saveReuniao(id);
+                editModal.show();
+
+            } catch (error) {
+                console.error("Erro ao abrir modal de reunião: ", error);
+                alert("Falha ao carregar dados para edição.");
+            }
+        };
+        
+        window.saveReuniao = async (id) => {
+            try {
+                // Coleta dados do modal
+                const tipo = document.getElementById("modal_reuniao_tipo").value;
+                const quantidade = Number(document.getElementById("modal_reuniao_qtd").value) || 0;
+                const dataString = document.getElementById("modal_reuniao_data").value; // "YYYY-MM-DD"
+
+                if (!tipo || !quantidade || !dataString) {
+                    alert("Todos os campos são obrigatórios.");
+                    return;
+                }
+
+                // Recria os objetos de data (Lógica crucial do reuniao.html)
+                const dataObjeto = new Date(`${dataString}T00:00:00`);
+                const dataTimestamp = firebase.firestore.Timestamp.fromDate(dataObjeto);
+                const dataFormatada = dataObjeto.toLocaleDateString('pt-BR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC'
+                });
+                
+                const updateData = {
+                    tipo: tipo,
+                    quantidade: quantidade,
+                    data: dataFormatada,
+                    dataTimestamp: dataTimestamp
+                };
+
+                await reunioesCol.doc(id).update(updateData);
+                
+                // Atualiza a tabela no DOM
+                const row = document.querySelector(`#reunioes-body tr[data-id="${id}"]`);
+                if (row) {
+                    row.querySelector('[data-field="data"]').textContent = updateData.data;
+                    row.querySelector('[data-field="tipo"]').textContent = updateData.tipo;
+                    row.querySelector('[data-field="quantidade"]').innerHTML = `<strong>${updateData.quantidade}</strong>`;
+                }
+
+                editModal.hide();
+
+            } catch (error) {
+                console.error("Erro ao salvar reunião: ", error);
+                alert("Falha ao salvar. Tente novamente.");
+            }
+        };
 
     </script>
 </body>
