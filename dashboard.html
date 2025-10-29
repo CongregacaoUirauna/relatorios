@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - V2.5</title>
+    <title>Painel Admin - V2.6</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
@@ -40,7 +40,6 @@
             color: #0d6efd;
             border-bottom: 3px solid #dee2e6;
         }
-        /* [V2.5] Botões de ação da tabela mais sutis */
         .action-buttons {
             display: flex;
             gap: 8px;
@@ -73,7 +72,7 @@
         
         <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Painel Admin V2.5</a>
+                <a class="navbar-brand" href="#">Painel Admin V2.6</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -276,7 +275,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        // [PRODUÇÃO V2.5] (JS V2.1 + Lógica de CRUD)
+        // [PRODUÇÃO V2.6] (JS V2.5 + Lógica de Média)
 
         // --- 1. Configuração do Firebase ---
         const firebaseConfig = {
@@ -297,7 +296,6 @@
         const reunioesCol = db.collection("reunioes");
 
         // --- 3. Elementos do DOM ---
-        // (DOM principal)
         const loginContainer = document.getElementById("loginContainer");
         const dashboardContainer = document.getElementById("dashboardContainer");
         const loginForm = document.getElementById("loginForm");
@@ -317,8 +315,6 @@
         const relatoriosEnviadosBody = document.getElementById("relatorios-enviados-body");
         const reunioesBody = document.getElementById("reunioes-body");
         const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-
-        // [V2.5] Elementos do Modal
         const editModalEl = document.getElementById('editModal');
         const editModal = new bootstrap.Modal(editModalEl);
         const editModalLabel = document.getElementById('editModalLabel');
@@ -357,7 +353,7 @@
         function populateDateSelectors() { const hoje = new Date(); const mesAtual = hoje.getMonth(); const anoAtual = hoje.getFullYear(); nomesMeses.forEach((nome, index) => { const option = document.createElement("option"); option.value = index; option.textContent = nome; if (index === mesAtual) option.selected = true; selectMes.appendChild(option); }); for (let i = anoAtual; i >= anoAtual - 3; i--) { const option = document.createElement("option"); option.value = i; option.textContent = i; if (i === anoAtual) option.selected = true; selectAno.appendChild(option); } }
 
         // =================================================================
-        // 6. CRUD (GERENCIAMENTO DE PESSOAS) (Sem Alterações)
+        // 6. CRUD (GERENCIAMENTO DE PESSOAS) (Sem Alterações V2.5)
         // =================================================================
         async function handleAddPessoa(e) { e.preventDefault(); const nomeInput = document.getElementById("addNome"); const grupoInput = document.getElementById("addGrupo"); const nome = nomeInput.value.trim(); const grupo = grupoInput.value; if (!nome) return; try { await pessoasCol.add({ nome: nome, grupo: grupo }); nomeInput.value = ''; } catch (error) { console.error("Erro ao adicionar pessoa: ", error); alert("Erro ao adicionar pessoa."); } }
         function loadPessoasCRUD() { pessoasCol.orderBy("nome").onSnapshot(snapshot => { pessoasBody.innerHTML = ""; if (snapshot.empty) { pessoasBody.innerHTML = '<tr><td colspan="3">Nenhuma pessoa cadastrada.</td></tr>'; return; } snapshot.forEach(doc => { const pessoa = doc.data(); const id = doc.id; const row = document.createElement("tr"); row.dataset.id = id; row.innerHTML = `
@@ -397,7 +393,7 @@
         window.handleDeletePessoa = async (id, nome) => { if (confirm(`Tem certeza que deseja excluir ${nome}?`)) { try { await pessoasCol.doc(id).delete(); } catch (error) { console.error("Erro ao excluir pessoa: ", error); } } };
 
         // =================================================================
-        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS (Refatorada V2.5)
+        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS (Refatorada V2.6)
         // =================================================================
 
         function resetAnalysisUI() {
@@ -407,9 +403,8 @@
             document.getElementById('totalMeioSemana').textContent = '0'; document.getElementById('totalFimSemana').textContent = '0';
             document.getElementById('countMeioSemana').textContent = '0 reuniões'; document.getElementById('countFimSemana').textContent = '0 reuniões';
             
-            // Tabelas
+            // (Colspan V2.5)
             pendentesBody.innerHTML = '<p class="text-muted">Carregando...</p>';
-            // [V2.5] Atualizado colspan para novas colunas de ação
             reunioesBody.innerHTML = '<tr><td colspan="4" class="text-muted">Carregando...</td></tr>';
             relatoriosEnviadosBody.innerHTML = '<tr><td colspan="7" class="text-muted">Carregando...</td></tr>';
         }
@@ -434,7 +429,7 @@
             }
         }
 
-        // [V2.5] MODIFICADO: Consulta e Cálculo de Relatórios de CAMPO
+        // (Relatórios de CAMPO - Sem Alterações V2.5)
         async function loadFieldReports(mesReferencia) {
             relatoriosEnviadosBody.innerHTML = ''; 
             try {
@@ -458,7 +453,6 @@
                     const id = doc.id;
                     nomesQueEnviaram.add(rel.nome);
 
-                    // Agrega totais
                     if (rel.grupo === "Pioneiro Auxiliar") {
                         totais.horasAux += (rel.horas || 0);
                         totais.estudosAux += (rel.estudos || 0);
@@ -474,9 +468,7 @@
                         }
                     }
 
-                    // Popula a tabela de Grid
                     const row = document.createElement('tr');
-                    // [V2.5] Adiciona data-id para manipulação do DOM
                     row.dataset.id = id; 
                     row.innerHTML = `
                         <td data-field="nome">${rel.nome}</td>
@@ -499,7 +491,6 @@
                     relatoriosEnviadosBody.appendChild(row);
                 });
 
-                // (Atualiza Cards de Totais - Sem alteração)
                 document.getElementById('totalHorasAux').textContent = totais.horasAux; document.getElementById('totalEstudosAux').textContent = totais.estudosAux; document.getElementById('totalHorasReg').textContent = totais.horasReg; document.getElementById('totalEstudosReg').textContent = totais.estudosReg; document.getElementById('totalEstudosPub').textContent = totais.estudosPub;
                 document.getElementById('countHorasAux').textContent = `${totais.countAux} relataram`; document.getElementById('countEstudosAux').textContent = `${totais.countAux} relataram`; document.getElementById('countHorasReg').textContent = `${totais.countReg} relataram`; document.getElementById('countEstudosReg').textContent = `${totais.countReg} relataram`; document.getElementById('countEstudosPub').textContent = `${totais.countPub} relataram`;
                 
@@ -515,7 +506,10 @@
         // (Renderização de Pendentes - Sem Alteração)
         function renderPendentes(allPessoas, nomesQueEnviaram) { const pendentes = { "Publicador": [], "Pioneiro Auxiliar": [], "Pioneiro Regular": [] }; allPessoas.forEach((grupo, nome) => { if (!nomesQueEnviaram.has(nome)) { if (pendentes.hasOwnProperty(grupo)) { pendentes[grupo].push(nome); } } }); pendentesBody.innerHTML = ''; let totalPendentes = 0; const gruposParaExibir = ["Pioneiro Regular", "Pioneiro Auxiliar", "Publicador"]; gruposParaExibir.forEach(grupo => { const lista = pendentes[grupo]; if (lista.length > 0) { totalPendentes += lista.length; let html = `<h6 class="text-muted">${grupo} (${lista.length})</h6><ul class="list-group list-group-flush mb-3">`; lista.sort().forEach(nome => { html += `<li class="list-group-item py-1">${nome}</li>`; }); html += `</ul>`; pendentesBody.innerHTML += html; } }); if (totalPendentes === 0) { pendentesBody.innerHTML = '<p class="text-success">Todos enviaram o relatório!</p>'; } }
 
-        // [V2.5] MODIFICADO: Relatórios de REUNIÃO
+        
+        // =================================================================
+        // [V2.6] MODIFICADO: Relatórios de REUNIÃO (Cálculo de Média)
+        // =================================================================
         async function loadMeetingReports(startDate, endDate) {
             reunioesBody.innerHTML = '';
             try {
@@ -539,7 +533,6 @@
                     const reuniao = doc.data();
                     const id = doc.id;
                     const row = document.createElement('tr');
-                    // [V2.5] Adiciona data-id para manipulação do DOM
                     row.dataset.id = id;
                     row.innerHTML = `
                         <td data-field="data">${reuniao.data}</td>
@@ -558,15 +551,27 @@
                     `;
                     reunioesBody.appendChild(row);
 
+                    // Soma os totais
                     if (reuniao.tipo === "Meio de Semana") {
                         totalMeioSemana += reuniao.quantidade; countMeioSemana++;
                     } else if (reuniao.tipo === "Fim de Semana") {
                         totalFimSemana += reuniao.quantidade; countFimSemana++;
                     }
                 });
+                
+                // --- [V2.6] INÍCIO DA MUDANÇA: Cálculo de Média ---
+                // Calcula a média; se count for 0, média é 0.
+                const mediaMeioSemana = (countMeioSemana > 0) ? (totalMeioSemana / countMeioSemana) : 0;
+                const mediaFimSemana = (countFimSemana > 0) ? (totalFimSemana / countFimSemana) : 0;
 
-                document.getElementById('totalMeioSemana').textContent = totalMeioSemana; document.getElementById('totalFimSemana').textContent = totalFimSemana;
-                document.getElementById('countMeioSemana').textContent = `${countMeioSemana} reuniões`; document.getElementById('countFimSemana').textContent = `${countFimSemana} reuniões`;
+                // Atualiza os cards com a Média, arredondada para o inteiro mais próximo
+                document.getElementById('totalMeioSemana').textContent = mediaMeioSemana.toFixed(0);
+                document.getElementById('totalFimSemana').textContent = mediaFimSemana.toFixed(0);
+                // --- [V2.6] FIM DA MUDANÇA ---
+                
+                // Atualiza a contagem de reuniões
+                document.getElementById('countMeioSemana').textContent = `${countMeioSemana} reuniões`;
+                document.getElementById('countFimSemana').textContent = `${countFimSemana} reuniões`;
 
             } catch (error) {
                 console.error("Erro ao carregar relatórios de reunião: ", error);
@@ -578,29 +583,24 @@
         function setLoadButtonLoading(isLoading) { if (isLoading) { loadReportsButton.disabled = true; loadButtonText.style.display = 'none'; loadButtonSpinner.style.display = 'inline-block'; } else { loadReportsButton.disabled = false; loadButtonText.style.display = 'inline-block'; loadButtonSpinner.style.display = 'none'; } }
 
         // =================================================================
-        // 8. [V2.5] NOVAS FUNÇÕES CRUD PARA RELATÓRIOS
+        // 8. [V2.5] FUNÇÕES CRUD (Sem Alterações)
         // =================================================================
 
         // --- Funções de Exclusão ---
-
         window.deleteRelatorio = async (id, nome) => {
             if (!confirm(`Tem certeza que deseja excluir o relatório de ${nome}?`)) return;
             try {
                 await relatoriosCol.doc(id).delete();
-                // Remove a linha da tabela sem precisar recarregar
                 document.querySelector(`#relatorios-enviados-body tr[data-id="${id}"]`).remove();
-                // Alerta (opcional): alert("Relatório excluído");
             } catch (error) {
                 console.error("Erro ao excluir relatório: ", error);
                 alert("Falha ao excluir o relatório.");
             }
         };
-        
         window.deleteReuniao = async (id, data) => {
             if (!confirm(`Tem certeza que deseja excluir a reunião do dia ${data}?`)) return;
             try {
                 await reunioesCol.doc(id).delete();
-                // Remove a linha da tabela sem precisar recarregar
                 document.querySelector(`#reunioes-body tr[data-id="${id}"]`).remove();
             } catch (error) {
                 console.error("Erro ao excluir reunião: ", error);
@@ -609,7 +609,6 @@
         };
 
         // --- Funções de Edição (Relatório de Campo) ---
-
         window.openEditRelatorioModal = async (id) => {
             try {
                 const doc = await relatoriosCol.doc(id).get();
@@ -618,12 +617,8 @@
                     return;
                 }
                 const rel = doc.data();
-                
                 editModalLabel.textContent = `Editar Relatório: ${rel.nome}`;
-                
                 let modalHtml = '';
-                
-                // Gera o formulário do modal dinamicamente com base no grupo
                 if (rel.grupo === "Pioneiro Auxiliar" || rel.grupo === "Pioneiro Regular") {
                     modalHtml = `
                         <p><strong>Grupo:</strong> ${rel.grupo}</p>
@@ -660,22 +655,17 @@
                         </div>
                     `;
                 }
-                
                 editModalBody.innerHTML = modalHtml;
                 editModalSaveButton.onclick = () => window.saveRelatorio(id, rel.grupo);
                 editModal.show();
-
             } catch (error) {
                 console.error("Erro ao abrir modal de relatório: ", error);
                 alert("Falha ao carregar dados para edição.");
             }
         };
-
         window.saveRelatorio = async (id, grupo) => {
             try {
                 const updateData = {};
-                
-                // Coleta dados do modal
                 if (grupo === "Pioneiro Auxiliar" || grupo === "Pioneiro Regular") {
                     updateData.horas = Number(document.getElementById("modal_p_horas").value) || 0;
                     updateData.estudos = Number(document.getElementById("modal_p_estudos").value) || 0;
@@ -684,10 +674,7 @@
                     updateData.participou = document.querySelector('input[name="modal_participou"]:checked').value;
                     updateData.estudos = Number(document.getElementById("modal_pub_estudos").value) || 0;
                 }
-
                 await relatoriosCol.doc(id).update(updateData);
-                
-                // Atualiza a tabela no DOM
                 const row = document.querySelector(`#relatorios-enviados-body tr[data-id="${id}"]`);
                 if (row) {
                     if (updateData.horas !== undefined) row.querySelector('[data-field="horas"]').textContent = updateData.horas;
@@ -695,9 +682,7 @@
                     if (updateData.observacoes !== undefined) row.querySelector('[data-field="observacoes"]').textContent = updateData.observacoes;
                     if (updateData.participou !== undefined) row.querySelector('[data-field="participou"]').textContent = updateData.participou;
                 }
-                
                 editModal.hide();
-
             } catch (error) {
                 console.error("Erro ao salvar relatório: ", error);
                 alert("Falha ao salvar. Tente novamente.");
@@ -705,7 +690,6 @@
         };
 
         // --- Funções de Edição (Relatório de Reunião) ---
-
         window.openEditReuniaoModal = async (id) => {
             try {
                 const doc = await reunioesCol.doc(id).get();
@@ -714,13 +698,9 @@
                     return;
                 }
                 const reuniao = doc.data();
-
-                // Converte a data "DD/MM/YYYY" para "YYYY-MM-DD"
                 const dataParts = reuniao.data.split('/');
                 const dataISO = `${dataParts[2]}-${dataParts[1]}-${dataParts[0]}`;
-                
                 editModalLabel.textContent = `Editar Reunião: ${reuniao.data}`;
-                
                 editModalBody.innerHTML = `
                     <div class="mb-3">
                         <label for="modal_reuniao_tipo" class="form-label">Tipo:</label>
@@ -738,54 +718,41 @@
                         <input type="number" id="modal_reuniao_qtd" class="form-control" value="${reuniao.quantidade || 0}">
                     </div>
                 `;
-                
                 editModalSaveButton.onclick = () => window.saveReuniao(id);
                 editModal.show();
-
             } catch (error) {
                 console.error("Erro ao abrir modal de reunião: ", error);
                 alert("Falha ao carregar dados para edição.");
             }
         };
-        
         window.saveReuniao = async (id) => {
             try {
-                // Coleta dados do modal
                 const tipo = document.getElementById("modal_reuniao_tipo").value;
                 const quantidade = Number(document.getElementById("modal_reuniao_qtd").value) || 0;
-                const dataString = document.getElementById("modal_reuniao_data").value; // "YYYY-MM-DD"
-
+                const dataString = document.getElementById("modal_reuniao_data").value; 
                 if (!tipo || !quantidade || !dataString) {
                     alert("Todos os campos são obrigatórios.");
                     return;
                 }
-
-                // Recria os objetos de data (Lógica crucial do reuniao.html)
                 const dataObjeto = new Date(`${dataString}T00:00:00`);
                 const dataTimestamp = firebase.firestore.Timestamp.fromDate(dataObjeto);
                 const dataFormatada = dataObjeto.toLocaleDateString('pt-BR', {
                     day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC'
                 });
-                
                 const updateData = {
                     tipo: tipo,
                     quantidade: quantidade,
                     data: dataFormatada,
                     dataTimestamp: dataTimestamp
                 };
-
                 await reunioesCol.doc(id).update(updateData);
-                
-                // Atualiza a tabela no DOM
                 const row = document.querySelector(`#reunioes-body tr[data-id="${id}"]`);
                 if (row) {
                     row.querySelector('[data-field="data"]').textContent = updateData.data;
                     row.querySelector('[data-field="tipo"]').textContent = updateData.tipo;
                     row.querySelector('[data-field="quantidade"]').innerHTML = `<strong>${updateData.quantidade}</strong>`;
                 }
-
                 editModal.hide();
-
             } catch (error) {
                 console.error("Erro ao salvar reunião: ", error);
                 alert("Falha ao salvar. Tente novamente.");
