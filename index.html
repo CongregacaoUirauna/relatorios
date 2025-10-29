@@ -1,375 +1,248 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-C8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulário de Relatório de Campo</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Relatório de Campo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #007bff;
-            --success-color: #28a745;
-            --error-color: #dc3545;
-            --border-color: #ccc;
-            --background-color: #f8f9fa;
-            --form-bg-color: #fff;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-        }
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--background-color);
-            color: #333;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background-color: var(--form-bg-color);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px var(--shadow-color);
-            box-sizing: border-box;
-        }
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 25px;
-            font-weight: 700;
-        }
-        .form-group {
-            margin-bottom: 1.25rem;
-            display: flex;
-            flex-direction: column;
-        }
-        .conditional-fields {
-            display: none;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-            margin-top: 10px;
-        }
-        label {
-            margin-bottom: .5rem;
-            font-weight: 500;
-            color: #555;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 16px;
-            box-sizing: border-box;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-        }
-        input[readonly] {
-            background-color: #e9ecef;
-            cursor: not-allowed;
-            font-weight: 500;
-        }
-        .radio-group label {
-            font-weight: 400;
-            margin-bottom: 0;
-            margin-left: 5px;
-        }
-        .radio-group div {
-            display: flex;
-            align-items: center;
-            margin-bottom: 5px;
-        }
-        .radio-group input[type="radio"] {
-            width: auto;
-        }
-        
-        .feedback {
-            display: none;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 4px;
-            font-weight: 500;
-            text-align: center;
-        }
-        .feedback.success { background-color: #d4edda; color: var(--success-color); border: 1px solid #c3e6cb; }
-        .feedback.error { background-color: #f8d7da; color: var(--error-color); border: 1px solid #f5c6cb; }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            margin-top: 15px;
-        }
-        .loading::after {
-            content: ''; display: block; width: 20px; height: 20px;
-            border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid var(--primary-color);
-            animation: spin 1s linear infinite; margin: 0 auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        button {
-            width: 100%; padding: 12px; background-color: var(--primary-color);
-            color: #fff; border: none; border-radius: 4px;
-            font-size: 18px; font-weight: 500; cursor: pointer;
-            transition: background-color 0.3s, opacity 0.3s;
-        }
-        button:hover { background-color: #0056b3; }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        body { background-color: #f4f4f4; }
+        .container { max-width: 600px; }
+        .form-section { display: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Relatório de Campo</h1>
-        <form id="relatorioForm">
-            <!-- 1. Seleção de Nome (Carregado do Firestore) -->
-            <div class="form-group">
-                <label for="selectNome">Informe seu nome*</label>
-                <select id="selectNome" name="nome" required>
-                    <option value="">Carregando lista...</option>
+    <div class="container p-4 my-5 bg-white rounded shadow-sm">
+        <h2 class="text-center mb-4">Enviar Relatório de Campo</h2>
+        
+        <form id="reportForm">
+            <div class="mb-3">
+                <label for="selectNome" class="form-label">Seu Nome:</label>
+                <select id="selectNome" class="form-select" required>
+                    <option value="" data-grupo="">Selecione seu nome...</option>
                 </select>
             </div>
 
-            <!-- 2. Mês (Automático) -->
-            <div class="form-group">
-                <label for="mesReferencia">Mês de Referência</label>
-                <input type="text" id="mesReferencia" name="mesReferencia" readonly>
+            <div class="mb-3">
+                <label for="mesReferencia" class="form-label">Mês de Referência:</label>
+                <input type="text" id="mesReferencia" class="form-control" readonly>
             </div>
 
-            <!-- 3. Campos Condicionais (Publicador) -->
-            <div class="conditional-fields" id="camposPublicador">
-                <div class="form-group radio-group">
-                    <label>Você participou no ministério (testemunho informal, cartas, carrinho, etc.) nesse mês?*</label>
-                    <div>
-                        <input type="radio" id="participouSim" name="participou" value="Sim" required>
-                        <label for="participouSim">Sim</label>
-                    </div>
-                    <div>
-                        <input type="radio" id="participouNao" name="participou" value="Não">
-                        <label for="participouNao">Não</label>
-                    </div>
+            <div id="camposPioneiro" class="form-section p-3 border rounded">
+                <div class="mb-3">
+                    <label for="p_horas" class="form-label">Total de Horas:</label>
+                    <input type="number" id="p_horas" class="form-control">
                 </div>
-
-                <div class="form-group radio-group">
-                    <label>Você está visitando alguém (estudo)?*</label>
-                    <div>
-                        <input type="radio" id="visitaSim" name="visitaAlguem" value="Sim" required>
-                        <label for="visitaSim">Sim</label>
-                    </div>
-                    <div>
-                        <input type="radio" id="visitaNao" name="visitaAlguem" value="Não">
-                        <label for="visitaNao">Não</label>
-                    </div>
+                <div class="mb-3">
+                    <label for="p_estudos" class="form-label">Estudos Bíblicos:</label>
+                    <input type="number" id="p_estudos" class="form-control">
                 </div>
-
-                <!-- 3.1. Campo Aninhado (Quantas Pessoas) -->
-                <div class="form-group conditional-fields" id="campoQuantasPessoas">
-                    <label for="quantosEstudos">Quantas pessoas você está visitando (estudos)?*</label>
-                    <input type="number" id="quantosEstudos" name="quantosEstudos" min="0" value="0">
+                <div class="mb-3">
+                    <label for="p_observacoes" class="form-label">Observações:</label>
+                    <textarea id="p_observacoes" class="form-control" rows="3"></textarea>
                 </div>
             </div>
 
-            <!-- 4. Campos Condicionais (Pioneiro Auxiliar / Regular) -->
-            <div class="conditional-fields" id="camposPioneiro">
-                <div class="form-group">
-                    <label for="horas">Por favor, informe suas horas*</label>
-                    <input type="number" id="horas" name="horas" min="0" required>
+            <div id="camposPublicador" class="form-section p-3 border rounded">
+                <div class="mb-3">
+                    <label class="form-label">Participou no ministério este mês?</label>
+                    <div>
+                        <input type="radio" name="participou" id="participouSim" value="Sim" class="form-check-input">
+                        <label for="participouSim" class="form-check-label">Sim</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="participou" id="participouNao" value="Não" class="form-check-input" checked>
+                        <label for="participouNao" class="form-check-label">Não</label>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Informe quantidade de estudos. (Caso não tenha, digite 0)*</label>
-                    <input type="number" id="estudosPioneiro" name="estudosPioneiro" min="0" value="0" required>
+                <div class="mb-3">
+                    <label class="form-label">Dirige um estudo bíblico?</label>
+                    <div>
+                        <input type="radio" name="visitaAlguem" id="visitaSim" value="Sim" class="form-check-input">
+                        <label for="visitaSim" class="form-check-label">Sim</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="visitaAlguem" id="visitaNao" value="Não" class="form-check-input" checked>
+                        <label for="visitaNao" class="form-check-label">Não</label>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="observacoes">Observações (opcional)</label>
-                    <textarea id="observacoes" name="observacoes" rows="3"></textarea>
+                <div id="campoQuantasPessoas" class="mb-3 form-section">
+                    <label for="pub_estudos" class="form-label">Quantos estudos?</label>
+                    <input type="number" id="pub_estudos" class="form-control" value="0">
                 </div>
             </div>
 
-            <!-- 5. Envio -->
-            <button type="submit" id="submitBtn">Enviar Relatório</button>
-            <div id="loading" class="loading"></div>
-            <div id="feedback" class="feedback"></div>
+            <button type="submit" id="submitButton" class="btn btn-primary w-100 mt-4" disabled>Carregando...</button>
         </form>
     </div>
 
-    <!-- jQuery para facilitar a lógica condicional -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    
-    <!-- SDK Firebase Modular -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-        // ATUALIZAÇÃO: getDocs, query, orderBy
-        import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
-        // 1. Configuração do Firebase
+    <script>
+        // [PRODUÇÃO] JS (index.html)
+        // Substitua pela configuração do seu projeto Firebase
         const firebaseConfig = {
-            apiKey: "AIzaSyC2PtOb7RwgZGXP-zW3vf65AY1ivQ-eySA",
-            authDomain: "relatorio-de-campo-5c837.firebaseapp.com",
-            projectId: "relatorio-de-campo-5c837",
-            storageBucket: "relatorio-de-campo-5c837.firebasestorage.app",
-            messagingSenderId: "11198755551",
-            appId: "1:11198755551:web:6c7d4ab3ff3d860c27ef6a"
+            apiKey: "SEU_API_KEY",
+            authDomain: "SEU_AUTH_DOMAIN",
+            projectId: "SEU_PROJECT_ID",
+            storageBucket: "SEU_STORAGE_BUCKET",
+            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+            appId: "SEU_APP_ID"
         };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const pessoasCol = db.collection("pessoas");
+        const relatoriosCol = db.collection("relatorios");
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        
-        $(function() {
-            const $selectNome = $('#selectNome');
-            const $mesReferencia = $('#mesReferencia');
-            const $camposPublicador = $('#camposPublicador');
-            const $camposPioneiro = $('#camposPioneiro');
-            const $campoQuantasPessoas = $('#campoQuantasPessoas');
+        // Elementos do DOM
+        const selectNome = document.getElementById("selectNome");
+        const mesReferenciaInput = document.getElementById("mesReferencia");
+        const camposPioneiro = document.getElementById("camposPioneiro");
+        const camposPublicador = document.getElementById("camposPublicador");
+        const campoQuantasPessoas = document.getElementById("campoQuantasPessoas");
+        const form = document.getElementById("reportForm");
+        const submitButton = document.getElementById("submitButton");
+
+        // Lógica de Data (Regra do "Dia 20")
+        function getMesReferencia() {
+            const hoje = new Date();
+            const dia = hoje.getDate();
+            let mes = hoje.getMonth(); // 0 = Jan, 11 = Dez
+            let ano = hoje.getFullYear();
+
+            // Se for dia 20 ou antes, o relatório é do mês anterior
+            if (dia <= 20) {
+                mes -= 1;
+                // Se era Janeiro (0), vira Dezembro (11) do ano anterior
+                if (mes < 0) {
+                    mes = 11;
+                    ano -= 1;
+                }
+            }
+            // Se for dia 21 ou depois, o relatório é do mês atual
             
-            const $form = $('#relatorioForm');
-            const $submitBtn = $('#submitBtn');
-            const $loading = $('#loading');
-            const $feedback = $('#feedback');
+            const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            return `${nomesMeses[mes]}/${ano}`;
+        }
 
-            // --- LÓGICA DE DATA (REGRA DO DIA 20) ---
-            function getMesReferencia() {
-                const hoje = new Date();
-                const dia = hoje.getDate();
-                let dataReferencia = new Date();
-                
-                if (dia <= 20) {
-                    dataReferencia.setMonth(hoje.getMonth() - 1);
+        // Carregar Nomes na inicialização
+        async function loadPessoas() {
+            try {
+                const snapshot = await pessoasCol.orderBy("nome").get();
+                if (snapshot.empty) {
+                    submitButton.textContent = "Nenhum nome cadastrado";
+                    return;
                 }
                 
-                const mes = dataReferencia.toLocaleString('pt-BR', { month: 'long' });
-                const ano = dataReferencia.getFullYear();
-                const mesCapitalizado = mes.charAt(0).toUpperCase() + mes.slice(1);
-                return `${mesCapitalizado}/${ano}`;
+                snapshot.forEach(doc => {
+                    const pessoa = doc.data();
+                    const option = document.createElement("option");
+                    option.value = pessoa.nome;
+                    option.textContent = pessoa.nome;
+                    option.dataset.grupo = pessoa.grupo; // Armazena o grupo
+                    selectNome.appendChild(option);
+                });
+
+                submitButton.textContent = "Enviar Relatório";
+                submitButton.disabled = false;
+
+            } catch (error) {
+                console.error("Erro ao carregar pessoas: ", error);
+                submitButton.textContent = "Erro ao carregar";
+                alert("Não foi possível carregar a lista de nomes. Tente recarregar a página.");
             }
+        }
 
-            // --- LÓGICA DE CARREGAMENTO DE NOMES (PRODUÇÃO) ---
-            // ATUALIZAÇÃO: Esta função agora busca do Firestore
-            async function carregarNomesReais() {
-                console.log("PRODUÇÃO: Buscando lista de nomes do Firestore...");
-                
-                try {
-                    const pessoasCol = collection(db, "pessoas");
-                    const q = query(pessoasCol, orderBy("nome")); // Ordena por nome
-                    const snapshot = await getDocs(q);
+        // Lógica Condicional (Seleção de Grupo)
+        function handleGroupChange() {
+            const selectedOption = selectNome.options[selectNome.selectedIndex];
+            const grupo = selectedOption.dataset.grupo;
 
-                    if (snapshot.empty) {
-                        $selectNome.empty().append('<option value="">Nenhuma pessoa cadastrada</option>');
-                        return;
-                    }
+            // Reseta os formulários
+            camposPioneiro.style.display = "none";
+            camposPublicador.style.display = "none";
 
-                    $selectNome.empty().append('<option value="">Selecione seu nome...</option>');
-                    
-                    snapshot.forEach(doc => {
-                        const pessoa = doc.data();
-                        $selectNome.append(
-                            `<option value="${pessoa.nome}" data-grupo="${pessoa.grupo}">${pessoa.nome}</option>`
-                        );
-                    });
-
-                } catch (error) {
-                    console.error("Erro ao carregar lista de pessoas: ", error);
-                    $selectNome.empty().append('<option value="">Erro ao carregar lista</option>');
-                }
+            if (grupo === "Pioneiro Auxiliar" || grupo === "Pioneiro Regular") {
+                camposPioneiro.style.display = "block";
+            } else if (grupo === "Publicador") {
+                camposPublicador.style.display = "block";
             }
+        }
 
-            // --- LÓGICA DE EXIBIÇÃO CONDICIONAL ---
-            $selectNome.on('change', function() {
-                const $selectedOption = $(this).find(':selected');
-                const grupo = $selectedOption.data('grupo');
-
-                $camposPublicador.slideUp();
-                $camposPioneiro.slideUp();
-                $campoQuantasPessoas.hide();
-                
-                $camposPublicador.find('input, select, textarea').prop('required', false);
-                $camposPioneiro.find('input, select, textarea').prop('required', false);
-
-                if (grupo === 'Publicador') {
-                    $camposPublicador.slideDown();
-                    $camposPublicador.find('input[name="participou"]').prop('required', true);
-                    $camposPublicador.find('input[name="visitaAlguem"]').prop('required', true);
-                } 
-                else if (grupo === 'Pioneiro Auxiliar' || grupo === 'Pioneiro Regular') {
-                    $camposPioneiro.slideDown();
-                    $('#horas').prop('required', true);
-                    $('#estudosPioneiro').prop('required', true);
-                }
-            });
-
-            $('input[name="visitaAlguem"]').on('change', function() {
-                if (this.value === 'Sim') {
-                    $campoQuantasPessoas.slideDown();
-                    $('#quantosEstudos').prop('required', true);
+        // Lógica Condicional Aninhada (Publicador)
+        document.querySelectorAll('input[name="visitaAlguem"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === "Sim") {
+                    campoQuantasPessoas.style.display = "block";
                 } else {
-                    $campoQuantasPessoas.slideUp();
-                    $('#quantosEstudos').prop('required', false);
+                    campoQuantasPessoas.style.display = "none";
+                    document.getElementById("pub_estudos").value = 0;
                 }
             });
+        });
 
-            // --- LÓGICA DE ENVIO (SUBMIT) ---
-            $form.on('submit', async function(e) {
-                e.preventDefault();
-                $submitBtn.prop('disabled', true);
-                $loading.show();
-                $feedback.hide();
+        // Lógica de Envio
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            submitButton.disabled = true;
+            submitButton.textContent = "Enviando...";
 
-                const $selectedOption = $selectNome.find(':selected');
-                const grupo = $selectedOption.data('grupo');
-                
-                const dados = {
-                    nome: $selectNome.val(),
-                    grupo: grupo,
-                    mesReferencia: $mesReferencia.val(),
-                    timestampEnvio: serverTimestamp()
-                };
+            const selectedOption = selectNome.options[selectNome.selectedIndex];
+            const nome = selectedOption.value;
+            const grupo = selectedOption.dataset.grupo;
+            const mesReferencia = mesReferenciaInput.value;
 
-                if (grupo === 'Publicador') {
-                    dados.participou = $('input[name="participou"]:checked').val();
-                    dados.visitaAlguem = $('input[name="visitaAlguem"]:checked').val();
-                    if (dados.visitaAlguem === 'Sim') {
-                        dados.estudos = parseInt($('#quantosEstudos').val() || 0);
-                    } else {
-                        dados.estudos = 0;
-                    }
-                } 
-                else if (grupo.startsWith('Pioneiro')) {
-                    dados.horas = parseInt($('#horas').val() || 0);
-                    dados.estudos = parseInt($('#estudosPioneiro').val() || 0);
-                    dados.observacoes = $('#observacoes').val();
-                }
+            if (!nome || !grupo) {
+                alert("Por favor, selecione seu nome.");
+                submitButton.disabled = false;
+                submitButton.textContent = "Enviar Relatório";
+                return;
+            }
 
-                try {
-                    await addDoc(collection(db, "relatorios"), dados);
-                    
-                    $feedback.text('✅ Relatório enviado com sucesso!').removeClass('error').addClass('success').show();
-                    $form[0].reset();
-                    
-                    $camposPublicador.hide();
-                    $camposPioneiro.hide();
-                    $campoQuantasPessoas.hide();
-                    $mesReferencia.val(getMesReferencia());
-                    
-                } catch (error) {
-                    console.error("Erro ao salvar no Firestore: ", error);
-                    $feedback.text(`❌ Erro ao enviar: ${error.message}`).removeClass('success').addClass('error').show();
-                } finally {
-                    $submitBtn.prop('disabled', false);
-                    $loading.hide();
-                }
-            });
+            const relatorio = {
+                nome: nome,
+                grupo: grupo,
+                mesReferencia: mesReferencia,
+                timestampEnvio: firebase.firestore.FieldValue.serverTimestamp()
+            };
 
-            // --- INICIALIZAÇÃO DA PÁGINA ---
-            $mesReferencia.val(getMesReferencia());
-            carregarNomesReais(); // ATUALIZAÇÃO: Chama a função de produção
+            // Adiciona campos com base no grupo
+            if (grupo === "Pioneiro Auxiliar" || grupo === "Pioneiro Regular") {
+                relatorio.horas = Number(document.getElementById("p_horas").value) || 0;
+                relatorio.estudos = Number(document.getElementById("p_estudos").value) || 0;
+                relatorio.observacoes = document.getElementById("p_observacoes").value || "";
+            } else if (grupo === "Publicador") {
+                relatorio.participou = document.querySelector('input[name="participou"]:checked').value;
+                relatorio.visitaAlguem = document.querySelector('input[name="visitaAlguem"]:checked').value;
+                relatorio.estudos = (relatorio.visitaAlguem === "Sim") ? Number(document.getElementById("pub_estudos").value) || 0 : 0;
+            }
+
+            try {
+                // Salva na coleção 'relatorios'
+                await relatoriosCol.add(relatorio);
+                alert("Relatório enviado com sucesso!");
+                form.reset();
+                camposPioneiro.style.display = "none";
+                camposPublicador.style.display = "none";
+                campoQuantasPessoas.style.display = "none";
+
+            } catch (error) {
+                console.error("Erro ao enviar relatório: ", error);
+                alert("Ocorreu um erro ao enviar seu relatório. Tente novamente.");
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = "Enviar Relatório";
+            }
+        }
+
+        // Inicialização
+        document.addEventListener("DOMContentLoaded", () => {
+            mesReferenciaInput.value = getMesReferencia();
+            loadPessoas();
+
+            selectNome.addEventListener("change", handleGroupChange);
+            form.addEventListener("submit", handleFormSubmit);
         });
     </script>
 </body>
