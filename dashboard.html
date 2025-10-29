@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - V2.1</title>
+    <title>Painel Admin - V2.2</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
@@ -36,6 +36,13 @@
         /* --- Estilo para a nova tabela de relatórios --- */
         .table-reports { font-size: 0.9rem; }
         .table-reports th { font-weight: 600; }
+
+        /* [V2.2] Estilo para as Abas Principais */
+        .main-task-tabs .nav-link {
+            font-size: 1.15rem;
+            padding-top: 0.8rem;
+            padding-bottom: 0.8rem;
+        }
     </style>
 </head>
 <body>
@@ -61,9 +68,10 @@
     </div>
 
     <div id="dashboardContainer" style="display: none;">
+        
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Painel Admin V2.1</a>
+                <a class="navbar-brand" href="#">Painel Admin V2.2</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -82,200 +90,216 @@
 
         <main class="container-fluid my-4">
             
-            <section id="manager" class="card p-3 p-md-4 mb-4">
-                <h4><i class="bi bi-people-fill"></i> Gerenciar Pessoas (Lista Mestra)</h4>
-                <p>Aqui você gerencia quem pode enviar relatórios e a qual grupo pertencem.</p>
-                <form id="addPessoaForm" class="row g-3">
-                    <div class="col-md-5">
-                        <label for="addNome" class="form-label visually-hidden">Nome</label>
-                        <input type="text" id="addNome" class="form-control" placeholder="Nome Completo" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="addGrupo" class="form-label visually-hidden">Grupo</label>
-                        <select id="addGrupo" class="form-select" required>
-                            <option value="Publicador" selected>Publicador</option>
-                            <option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option>
-                            <option value="Pioneiro Regular">Pioneiro Regular</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-success w-100">
-                            <i class="bi bi-plus-lg"></i> Adicionar
-                        </button>
-                    </div>
-                </form>
-                <hr>
-                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-striped table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Nome</th>
-                                <th>Grupo (Atual)</th>
-                                <th style="width: 180px;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pessoas-body">
-                            </tbody>
-                    </table>
-                </div>
-            </section>
+            <ul class="nav nav-tabs nav-fill main-task-tabs" id="mainTasksTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="task-analysis-tab" data-bs-toggle="tab" data-bs-target="#task-analysis-pane" type="button" role="tab" aria-controls="task-analysis-pane" aria-selected="true">
+                        <i class="bi bi-bar-chart-line-fill"></i> Análise de Relatórios
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="task-manager-tab" data-bs-toggle="tab" data-bs-target="#task-manager-pane" type="button" role="tab" aria-controls="task-manager-pane" aria-selected="false">
+                        <i class="bi bi-people-fill"></i> Gerenciar Pessoas
+                    </button>
+                </li>
+            </ul>
 
-            <section id="analysis" class="card p-3 p-md-4">
-                <h4><i class="bi bi-bar-chart-line-fill"></i> Análise de Relatórios</h4>
-                <div class="row g-3 mb-3 p-3 bg-light border rounded">
-                    <div class="col-md-5">
-                        <label for="selectMes" class="form-label">Mês</label>
-                        <select id="selectMes" class="form-select"></select>
-                    </div>
-                    <div class="col-md-5">
-                        <label for="selectAno" class="form-label">Ano</label>
-                        <select id="selectAno" class="form-select"></select>
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button id="loadReportsButton" class="btn btn-primary w-100">
-                            <span id="loadButtonText"><i class="bi bi-arrow-clockwise"></i> Carregar</span>
-                            <span id="loadButtonSpinner" class="spinner-border spinner-border-sm" role="status" style="display: none;"></span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-lg-7">
-                        <h5 class="border-bottom pb-2 mb-3">Relatório de Campo</h5>
-                        
-                        <ul class="nav nav-tabs" id="fieldReportTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="true">Visão Geral (Totais)</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="individual-tab" data-bs-toggle="tab" data-bs-target="#individual-tab-pane" type="button" role="tab" aria-controls="individual-tab-pane" aria-selected="false">Relatórios Enviados (Grid)</button>
-                            </li>
-                        </ul>
-
-                        <div class="tab-content" id="fieldReportTabsContent">
-                            
-                            <div class="tab-pane fade show active" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0">
-                                <div class="p-3 border border-top-0 rounded-bottom">
-                                    <h6 class="text-muted">Totais Agregados</h6>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <div class="card card-total h-100">
-                                                <div class="card-body">
-                                                    <h6 class="card-title text-muted">Horas (Auxiliares)</h6>
-                                                    <p class="display-6 text-primary" id="totalHorasAux">0</p>
-                                                    <small id="countHorasAux">0 relataram</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <div class="card card-total h-100">
-                                                <div class="card-body">
-                                                    <h6 class="card-title text-muted">Estudos (Auxiliares)</h6>
-                                                    <p class="display-6 text-primary" id="totalEstudosAux">0</p>
-                                                    <small id="countEstudosAux">0 relataram</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <div class="card card-total h-100">
-                                                <div class="card-body">
-                                                    <h6 class="card-title text-muted">Horas (Regulares)</h6>
-                                                    <p class="display-6 text-info" id="totalHorasReg">0</p>
-                                                    <small id="countHorasReg">0 relataram</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <div class="card card-total h-100">
-                                                <div class="card-body">
-                                                    <h6 class="card-title text-muted">Estudos (Regulares)</h6>
-                                                    <p class="display-6 text-info" id="totalEstudosReg">0</p>
-                                                    <small id="countEstudosReg">0 relataram</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-12 mb-3">
-                                            <div class="card card-total h-100">
-                                                <div class="card-body">
-                                                    <h6 class="card-title text-muted">Estudos (Publicadores)</h6>
-                                                    <p class="display-6 text-secondary" id="totalEstudosPub">0</p>
-                                                    <small id="countEstudosPub">0 relataram</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <h6 class="text-muted mt-3">Pendentes de Relatório</h6>
-                                    <div id="pendentes-body" style="max-height: 300px; overflow-y: auto;">
-                                        </div>
-                                </div>
+            <div class="tab-content" id="mainTasksTabContent">
+                
+                <div class="tab-pane fade show active" id="task-analysis-pane" role="tabpanel" aria-labelledby="task-analysis-tab" tabindex="0">
+                    
+                    <div id="analysis" class="card p-3 p-md-4 mt-3">
+                        <h4><i class="bi bi-bar-chart-line-fill"></i> Análise de Relatórios</h4>
+                        <div class="row g-3 mb-3 p-3 bg-light border rounded">
+                            <div class="col-md-5">
+                                <label for="selectMes" class="form-label">Mês</label>
+                                <select id="selectMes" class="form-select"></select>
                             </div>
-                            
-                            <div class="tab-pane fade" id="individual-tab-pane" role="tabpanel" aria-labelledby="individual-tab" tabindex="0">
-                                <div class="p-3 border border-top-0 rounded-bottom">
-                                    <h6 class="text-muted">Lista de Envios Individuais</h6>
-                                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-                                        <table class="table table-sm table-striped table-hover table-reports">
-                                            <thead>
-                                                <tr>
-                                                    <th>Nome</th>
-                                                    <th>Grupo</th>
-                                                    <th>Horas</th>
-                                                    <th>Estudos</th>
-                                                    <th>Participou?</th>
-                                                    <th>Observações</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="relatorios-enviados-body">
-                                                </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                            <div class="col-md-5">
+                                <label for="selectAno" class="form-label">Ano</label>
+                                <select id="selectAno" class="form-select"></select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button id="loadReportsButton" class="btn btn-primary w-100">
+                                    <span id="loadButtonText"><i class="bi bi-arrow-clockwise"></i> Carregar</span>
+                                    <span id="loadButtonSpinner" class="spinner-border spinner-border-sm" role="status" style="display: none;"></span>
+                                </button>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="col-lg-5 border-start">
-                        <h5 class="border-bottom pb-2 mb-3">Relatório de Assistência</h5>
+        
                         <div class="row">
-                            <div class="col-6 mb-3">
-                                <div class="card card-total h-100">
-                                    <div class="card-body">
-                                        <h6 class="card-title text-muted">Meio de Semana</h6>
-                                        <p class="display-6 text-success" id="totalMeioSemana">0</p>
-                                        <small id="countMeioSemana">0 reuniões</small>
+                            <div class="col-lg-7">
+                                <h5 class="border-bottom pb-2 mb-3">Relatório de Campo</h5>
+                                
+                                <ul class="nav nav-tabs" id="fieldReportTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="true">Visão Geral (Totais)</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="individual-tab" data-bs-toggle="tab" data-bs-target="#individual-tab-pane" type="button" role="tab" aria-controls="individual-tab-pane" aria-selected="false">Relatórios Enviados (Grid)</button>
+                                    </li>
+                                </ul>
+        
+                                <div class="tab-content" id="fieldReportTabsContent">
+                                    
+                                    <div class="tab-pane fade show active" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0">
+                                        <div class="p-3 border border-top-0 rounded-bottom">
+                                            <h6 class="text-muted">Totais Agregados</h6>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="card card-total h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title text-muted">Horas (Auxiliares)</h6>
+                                                            <p class="display-6 text-primary" id="totalHorasAux">0</p>
+                                                            <small id="countHorasAux">0 relataram</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="card card-total h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title text-muted">Estudos (Auxiliares)</h6>
+                                                            <p class="display-6 text-primary" id="totalEstudosAux">0</p>
+                                                            <small id="countEstudosAux">0 relataram</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="card card-total h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title text-muted">Horas (Regulares)</h6>
+                                                            <p class="display-6 text-info" id="totalHorasReg">0</p>
+                                                            <small id="countHorasReg">0 relataram</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="card card-total h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title text-muted">Estudos (Regulares)</h6>
+                                                            <p class="display-6 text-info" id="totalEstudosReg">0</p>
+                                                            <small id="countEstudosReg">0 relataram</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 mb-3">
+                                                    <div class="card card-total h-100">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title text-muted">Estudos (Publicadores)</h6>
+                                                            <p class="display-6 text-secondary" id="totalEstudosPub">0</p>
+                                                            <small id="countEstudosPub">0 relataram</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+        
+                                            <h6 class="text-muted mt-3">Pendentes de Relatório</h6>
+                                            <div id="pendentes-body" style="max-height: 300px; overflow-y: auto;">
+                                                </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="tab-pane fade" id="individual-tab-pane" role="tabpanel" aria-labelledby="individual-tab" tabindex="0">
+                                        <div class="p-3 border border-top-0 rounded-bottom">
+                                            <h6 class="text-muted">Lista de Envios Individuais</h6>
+                                            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                                                <table class="table table-sm table-striped table-hover table-reports">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Nome</th>
+                                                            <th>Grupo</th>
+                                                            <th>Horas</th>
+                                                            <th>Estudos</th>
+                                                            <th>Participou?</th>
+                                                            <th>Observações</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="relatorios-enviados-body">
+                                                        </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-6 mb-3">
-                                <div class="card card-total h-100">
-                                    <div class="card-body">
-                                        <h6 class="card-title text-muted">Fim de Semana</h6>
-                                        <p class="display-6 text-success" id="totalFimSemana">0</p>
-                                        <small id="countFimSemana">0 reuniões</small>
+        
+                            <div class="col-lg-5 border-start">
+                                <h5 class="border-bottom pb-2 mb-3">Relatório de Assistência</h5>
+                                <div class="row">
+                                    <div class="col-6 mb-3">
+                                        <div class="card card-total h-100">
+                                            <div class="card-body">
+                                                <h6 class="card-title text-muted">Meio de Semana</h6>
+                                                <p class="display-6 text-success" id="totalMeioSemana">0</p>
+                                                <small id="countMeioSemana">0 reuniões</small>
+                                            </div>
+                                        </div>
                                     </div>
+                                    <div class="col-6 mb-3">
+                                        <div class="card card-total h-100">
+                                            <div class="card-body">
+                                                <h6 class="card-title text-muted">Fim de Semana</h6>
+                                                <p class="display-6 text-success" id="totalFimSemana">0</p>
+                                                <small id="countFimSemana">0 reuniões</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+        
+                                <h5 class="border-bottom pb-2 mb-3">Lista de Reuniões (Mês)</h5>
+                                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                                    <table class="table table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Tipo</th>
+                                                <th>Qtd.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="reunioes-body">
+                                            </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
-
-                        <h5 class="border-bottom pb-2 mb-3">Lista de Reuniões (Mês)</h5>
-                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                            <table class="table table-sm table-striped">
-                                <thead>
+                    </div> </div> <div class="tab-pane fade" id="task-manager-pane" role="tabpanel" aria-labelledby="task-manager-tab" tabindex="0">
+                    
+                    <div id="manager" class="card p-3 p-md-4 mt-3">
+                        <h4><i class="bi bi-people-fill"></i> Gerenciar Pessoas (Lista Mestra)</h4>
+                        <p>Aqui você gerencia quem pode enviar relatórios e a qual grupo pertencem.</p>
+                        <form id="addPessoaForm" class="row g-3">
+                            <div class="col-md-5">
+                                <label for="addNome" class="form-label visually-hidden">Nome</label>
+                                <input type="text" id="addNome" class="form-control" placeholder="Nome Completo" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="addGrupo" class="form-label visually-hidden">Grupo</label>
+                                <select id="addGrupo" class="form-select" required>
+                                    <option value="Publicador" selected>Publicador</option>
+                                    <option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option>
+                                    <option value="Pioneiro Regular">Pioneiro Regular</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-plus-lg"></i> Adicionar
+                                </button>
+                            </div>
+                        </form>
+                        <hr>
+                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                            <table class="table table-striped table-hover align-middle">
+                                <thead class="table-light">
                                     <tr>
-                                        <th>Data</th>
-                                        <th>Tipo</th>
-                                        <th>Qtd.</th>
+                                        <th>Nome</th>
+                                        <th>Grupo (Atual)</th>
+                                        <th style="width: 180px;">Ações</th>
                                     </tr>
                                 </thead>
-                                <tbody id="reunioes-body">
+                                <tbody id="pessoas-body">
                                     </tbody>
                             </table>
                         </div>
-                    </div>
-                </div>
-            </section>
-        </main>
+                    </div> </div> </div> </main>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -284,10 +308,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        // [PRODUÇÃO V2.1] JS (dashboard.html)
+        // [PRODUÇÃO V2.1 JS] (Sem alterações na lógica)
 
         // --- 1. Configuração do Firebase ---
-        // (Usando as chaves reais fornecidas)
         const firebaseConfig = {
           apiKey: "AIzaSyC2PtOb7RwgZGXP-zW3vf65AY1ivQ-eySA",
           authDomain: "relatorio-de-campo-5c837.firebaseapp.com",
@@ -326,7 +349,7 @@
         const loadButtonText = document.getElementById("loadButtonText");
         const loadButtonSpinner = document.getElementById("loadButtonSpinner");
         const pendentesBody = document.getElementById("pendentes-body");
-        const relatoriosEnviadosBody = document.getElementById("relatorios-enviados-body"); // [NOVO]
+        const relatoriosEnviadosBody = document.getElementById("relatorios-enviados-body");
         const reunioesBody = document.getElementById("reunioes-body");
 
         const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
@@ -538,7 +561,7 @@
         };
 
         // =================================================================
-        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS (MODIFICADA)
+        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS (Sem Alterações)
         // =================================================================
 
         function resetAnalysisUI() {
@@ -558,8 +581,6 @@
             // Tabelas
             pendentesBody.innerHTML = '<p class="text-muted">Carregando...</p>';
             reunioesBody.innerHTML = '<tr><td colspan="3" class="text-muted">Carregando...</td></tr>';
-            
-            // [NOVO] Resetar a nova tabela de grid
             relatoriosEnviadosBody.innerHTML = '<tr><td colspan="6" class="text-muted">Carregando...</td></tr>';
         }
 
@@ -586,9 +607,7 @@
             }
         }
 
-        // [MODIFICADO] Consulta e Cálculo de Relatórios de CAMPO
         async function loadFieldReports(mesReferencia) {
-            // [NOVO] Limpa a tabela de relatórios individuais
             relatoriosEnviadosBody.innerHTML = ''; 
             
             try {
@@ -610,7 +629,6 @@
                 
                 const nomesQueEnviaram = new Set(); 
 
-                // [NOVO] Verifica se a consulta de relatórios está vazia
                 if (relatoriosSnapshot.empty) {
                     relatoriosEnviadosBody.innerHTML = '<tr><td colspan="6" class="text-muted">Nenhum relatório enviado para este mês.</td></tr>';
                 }
@@ -619,7 +637,7 @@
                     const rel = doc.data();
                     nomesQueEnviaram.add(rel.nome);
 
-                    // Agrega totais e contagens (Lógica antiga)
+                    // Agrega totais e contagens
                     if (rel.grupo === "Pioneiro Auxiliar") {
                         totais.horasAux += (rel.horas || 0);
                         totais.estudosAux += (rel.estudos || 0);
@@ -635,10 +653,8 @@
                         }
                     }
 
-                    // --- [NOVA LÓGICA] ---
                     // Popula a tabela de Grid (Aba 2)
                     const row = document.createElement('tr');
-                    // Usamos '||' para exibir um traço '—' se o campo não existir (ex: 'horas' para Publicador)
                     row.innerHTML = `
                         <td>${rel.nome}</td>
                         <td>${rel.grupo}</td>
@@ -648,10 +664,9 @@
                         <td>${rel.observacoes || ''}</td>
                     `;
                     relatoriosEnviadosBody.appendChild(row);
-                    // --- Fim da Nova Lógica ---
                 });
 
-                // Atualiza Cards de Totais (Lógica antiga)
+                // Atualiza Cards de Totais
                 document.getElementById('totalHorasAux').textContent = totais.horasAux;
                 document.getElementById('totalEstudosAux').textContent = totais.estudosAux;
                 document.getElementById('totalHorasReg').textContent = totais.horasReg;
@@ -664,7 +679,7 @@
                 document.getElementById('countEstudosReg').textContent = `${totais.countReg} relataram`;
                 document.getElementById('countEstudosPub').textContent = `${totais.countPub} relataram`;
                 
-                // Cálculo de Pendentes (Lógica antiga)
+                // Cálculo de Pendentes
                 renderPendentes(allPessoas, nomesQueEnviaram);
 
             } catch (error) {
@@ -674,7 +689,6 @@
             }
         }
         
-        // Renderização de Pendentes (Sem Alterações)
         function renderPendentes(allPessoas, nomesQueEnviaram) {
             const pendentes = {
                 "Publicador": [],
@@ -712,7 +726,6 @@
             }
         }
 
-        // Relatórios de REUNIÃO (Sem Alterações)
         async function loadMeetingReports(startDate, endDate) {
             reunioesBody.innerHTML = '';
             try {
@@ -765,7 +778,6 @@
             }
         }
 
-        // Função utilitária (Sem Alterações)
         function setLoadButtonLoading(isLoading) {
             if (isLoading) {
                 loadReportsButton.disabled = true;
