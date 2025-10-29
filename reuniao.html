@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Assistência</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- jQuery (ainda usado para o feedback, mas InputMask foi removido) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --border-color: #ccc;
+            --background-color: #f8f9fa;
+            --form-bg-color: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: var(--form-bg-color);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px var(--shadow-color);
+            /* [INDICADOR DE AMBIENTE: TESTE 1 (Reuniões)] */
+            border-top: 5px solid orange;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: .5rem; font-weight: 500; color: #555; }
+        
+        input, select, button {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        /* Estilo específico para o seletor de data para alinhar */
+        input[type="date"] {
+            padding: 8px 12px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .feedback {
+            display: none;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            font-weight: 500;
+            text-align: center;
+        }
+        .feedback.success { background-color: #d4edda; color: var(--success-color); border: 1px solid #c3e6cb; }
+        .feedback.error { background-color: #f8d7da; color: var(--error-color); border: 1px solid #f5c6cb; }
+        
+        .loading { display: none; text-align: center; margin-top: 15px; }
+        .loading::after {
+            content: ''; display: block; width: 20px; height: 20px;
+            border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid var(--primary-color);
+            animation: spin 1s linear infinite; margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registrar Assistência</h1>
+        <form id="reuniaoForm">
+            <div class="form-group">
+                <label for="tipoReuniao">Reunião*</label>
+                <select id="tipoReuniao" name="tipo" required>
+                    <option value="">Selecione...</option>
+                    <option value="Meio de Semana">Meio de Semana</option>
+                    <option value="Fim de Semana">Fim de Semana</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="dataReuniao">Data da Reunião*</label>
+                <!-- MUDANÇA: Alterado de type="text" para type="date" -->
+                <input type="date" id="dataReuniao" name="data" required>
+            </div>
+
+            <div class="form-group">
+                <label for="quantidade">Quantidade*</label>
+                <input type="number" id="quantidade" name="quantidade" min="0" required>
+            </div>
+
+            <button type="submit" id="submitBtn">Enviar Assistência</button>
+            <div id="loading" class="loading"></div>
+            <div id="feedback" class="feedback"></div>
+        </form>
+    </div>
+
+    <!-- SDK Firebase Modular -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+        // 1. Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2PtOb7RwgZGXP-zW3vf65AY1ivQ-eySA",
+            authDomain: "relatorio-de-campo-5c837.firebaseapp.com",
+            projectId: "relatorio-de-campo-5c837",
+            storageBucket: "relatorio-de-campo-5c837.firebasestorage.app",
+            messagingSenderId: "11198755551",
+            appId: "1:11198755551:web:6c7d4ab3ff3d860c27ef6a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const reunioesCol = collection(db, "reunioes");
+
+        // MUDANÇA: inputmask não é mais necessário
+        
+        // --- LÓGICA DE ENVIO ---
+        const form = document.getElementById('reuniaoForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const feedback = document.getElementById('feedback');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            feedback.style.display = 'none';
+
+            // MUDANÇA: Função para converter a data AAAA-MM-DD para um Timestamp
+            // A data do input type="date" vem como "AAAA-MM-DD"
+            function convertDateToTimestamp(dateString) {
+                const parts = dateString.split('-'); // ["AAAA", "MM", "DD"]
+                // new Date(AAAA, MM-1, DD)
+                return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            }
+            
+            // MUDANÇA: Função para formatar AAAA-MM-DD para DD/MM/AAAA (para salvar no campo 'data')
+            function formatDateToBR(dateString) {
+                const parts = dateString.split('-');
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+
+            try {
+                // O valor aqui será "AAAA-MM-DD"
+                const dataReuniaoStr = document.getElementById('dataReuniao').value; 
+                
+                const dados = {
+                    tipo: document.getElementById('tipoReuniao').value,
+                    data: formatDateToBR(dataReuniaoStr), // Salva como DD/MM/AAAA
+                    quantidade: parseInt(document.getElementById('quantidade').value),
+                    dataTimestamp: convertDateToTimestamp(dataReuniaoStr), // Para ordenação
+                    timestampEnvio: serverTimestamp() // Quando foi enviado
+                };
+
+                await addDoc(reunioesCol, dados);
+                
+                feedback.textContent = '✅ Assistência enviada com sucesso!';
+                feedback.className = 'feedback success';
+                form.reset();
+
+            } catch (error) {
+                console.error("Erro ao salvar no Firestore: ", error);
+                feedback.textContent = `❌ Erro ao enviar: ${error.message}`;
+                feedback.className = 'feedback error';
+            } finally {
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+                feedback.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
+
