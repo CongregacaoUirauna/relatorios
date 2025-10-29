@@ -18,9 +18,6 @@
             --shadow-color: rgba(0, 0, 0, 0.1);
         }
         body {
-            /* [INDICADOR DE AMBIENTE: TESTE 1] */
-            border-top: 5px solid orange;
-
             font-family: 'Roboto', sans-serif;
             background-color: var(--background-color);
             color: #333;
@@ -53,7 +50,6 @@
             display: flex;
             flex-direction: column;
         }
-        /* Oculta os grupos de campos por padrão */
         .conditional-fields {
             display: none;
             padding-top: 10px;
@@ -98,7 +94,6 @@
             width: auto;
         }
         
-        /* Feedback e Loading */
         .feedback {
             display: none;
             padding: 15px;
@@ -136,7 +131,7 @@
     <div class="container">
         <h1>Relatório de Campo</h1>
         <form id="relatorioForm">
-            <!-- 1. Seleção de Nome (Carregado pela Lista Mestre) -->
+            <!-- 1. Seleção de Nome (Carregado do Firestore) -->
             <div class="form-group">
                 <label for="selectNome">Informe seu nome*</label>
                 <select id="selectNome" name="nome" required>
@@ -211,11 +206,11 @@
     
     <!-- SDK Firebase Modular -->
     <script type="module">
-        // Importações do Firebase SDK v9+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+        // ATUALIZAÇÃO: getDocs, query, orderBy
+        import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
-        // 1. Configuração do Firebase (O SEU PROJETO NOVO)
+        // 1. Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC2PtOb7RwgZGXP-zW3vf65AY1ivQ-eySA",
             authDomain: "relatorio-de-campo-5c837.firebaseapp.com",
@@ -225,11 +220,9 @@
             appId: "1:11198755551:web:6c7d4ab3ff3d860c27ef6a"
         };
 
-        // Inicializa Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        // --- INÍCIO DA LÓGICA DO FORMULÁRIO ---
         $(function() {
             const $selectNome = $('#selectNome');
             const $mesReferencia = $('#mesReferencia');
@@ -248,74 +241,70 @@
                 const dia = hoje.getDate();
                 let dataReferencia = new Date();
                 
-                // Se for dia 20 ou antes, o relatório é do mês passado.
                 if (dia <= 20) {
                     dataReferencia.setMonth(hoje.getMonth() - 1);
                 }
-                // Se for dia 21 ou depois, é do mês atual (dataReferencia já é 'hoje')
-
+                
                 const mes = dataReferencia.toLocaleString('pt-BR', { month: 'long' });
                 const ano = dataReferencia.getFullYear();
-                // Capitaliza o mês (ex: "outubro" -> "Outubro")
                 const mesCapitalizado = mes.charAt(0).toUpperCase() + mes.slice(1);
                 return `${mesCapitalizado}/${ano}`;
             }
 
-            // --- LÓGICA DE CARREGAMENTO DE NOMES (TESTE 1) ---
-            // SIMULAÇÃO: No Teste 1, usamos uma lista fixa.
-            // Na Parte 2 (Dashboard), você vai cadastrar essa lista no Firestore.
-            // Na Parte 3 (Produção), vamos trocar isso por uma busca real (getDocs).
-            function carregarNomesSimulado() {
-                console.log("TESTE 1: Usando lista de nomes simulada (hardcoded).");
+            // --- LÓGICA DE CARREGAMENTO DE NOMES (PRODUÇÃO) ---
+            // ATUALIZAÇÃO: Esta função agora busca do Firestore
+            async function carregarNomesReais() {
+                console.log("PRODUÇÃO: Buscando lista de nomes do Firestore...");
                 
-                const listaPessoasMock = [
-                    { id: 'teste1', nome: 'Ana (Publicadora Teste)', grupo: 'Publicador' },
-                    { id: 'teste2', nome: 'Bruno (Pioneiro Auxiliar Teste)', grupo: 'Pioneiro Auxiliar' },
-                    { id: 'teste3', nome: 'Carla (Pioneira Regular Teste)', grupo: 'Pioneiro Regular' },
-                    { id: 'teste4', nome: 'Davi (Outro Publicador Teste)', grupo: 'Publicador' }
-                ];
+                try {
+                    const pessoasCol = collection(db, "pessoas");
+                    const q = query(pessoasCol, orderBy("nome")); // Ordena por nome
+                    const snapshot = await getDocs(q);
 
-                $selectNome.empty().append('<option value="">Selecione seu nome...</option>');
-                
-                listaPessoasMock.forEach(pessoa => {
-                    $selectNome.append(
-                        // Armazenamos o GRUPO da pessoa no 'data-grupo'
-                        `<option value="${pessoa.nome}" data-grupo="${pessoa.grupo}">${pessoa.nome}</option>`
-                    );
-                });
+                    if (snapshot.empty) {
+                        $selectNome.empty().append('<option value="">Nenhuma pessoa cadastrada</option>');
+                        return;
+                    }
+
+                    $selectNome.empty().append('<option value="">Selecione seu nome...</option>');
+                    
+                    snapshot.forEach(doc => {
+                        const pessoa = doc.data();
+                        $selectNome.append(
+                            `<option value="${pessoa.nome}" data-grupo="${pessoa.grupo}">${pessoa.nome}</option>`
+                        );
+                    });
+
+                } catch (error) {
+                    console.error("Erro ao carregar lista de pessoas: ", error);
+                    $selectNome.empty().append('<option value="">Erro ao carregar lista</option>');
+                }
             }
 
             // --- LÓGICA DE EXIBIÇÃO CONDICIONAL ---
-            
-            // 1. Quando o NOME muda
             $selectNome.on('change', function() {
                 const $selectedOption = $(this).find(':selected');
-                const grupo = $selectedOption.data('grupo'); // Pega o grupo do data-
+                const grupo = $selectedOption.data('grupo');
 
-                // Reseta (esconde) todos os campos
                 $camposPublicador.slideUp();
                 $camposPioneiro.slideUp();
                 $campoQuantasPessoas.hide();
                 
-                // Remove 'required' dos campos escondidos para não bloquear o envio
                 $camposPublicador.find('input, select, textarea').prop('required', false);
                 $camposPioneiro.find('input, select, textarea').prop('required', false);
 
                 if (grupo === 'Publicador') {
                     $camposPublicador.slideDown();
-                    // Define 'required' para os campos de publicador
                     $camposPublicador.find('input[name="participou"]').prop('required', true);
                     $camposPublicador.find('input[name="visitaAlguem"]').prop('required', true);
                 } 
                 else if (grupo === 'Pioneiro Auxiliar' || grupo === 'Pioneiro Regular') {
                     $camposPioneiro.slideDown();
-                    // Define 'required' para os campos de pioneiro
                     $('#horas').prop('required', true);
                     $('#estudosPioneiro').prop('required', true);
                 }
             });
 
-            // 2. Lógica Aninhada (Quantas Pessoas)
             $('input[name="visitaAlguem"]').on('change', function() {
                 if (this.value === 'Sim') {
                     $campoQuantasPessoas.slideDown();
@@ -336,20 +325,16 @@
                 const $selectedOption = $selectNome.find(':selected');
                 const grupo = $selectedOption.data('grupo');
                 
-                // 1. Monta o objeto de dados
                 const dados = {
                     nome: $selectNome.val(),
                     grupo: grupo,
                     mesReferencia: $mesReferencia.val(),
-                    timestampEnvio: serverTimestamp() // Data/Hora exata do envio
+                    timestampEnvio: serverTimestamp()
                 };
 
-                // 2. Adiciona campos específicos do grupo
                 if (grupo === 'Publicador') {
                     dados.participou = $('input[name="participou"]:checked').val();
                     dados.visitaAlguem = $('input[name="visitaAlguem"]:checked').val();
-                    
-                    // O campo "Estudos" do Publicador é o "quantasPessoas"
                     if (dados.visitaAlguem === 'Sim') {
                         dados.estudos = parseInt($('#quantosEstudos').val() || 0);
                     } else {
@@ -362,18 +347,16 @@
                     dados.observacoes = $('#observacoes').val();
                 }
 
-                // 3. Envia para o Firestore
                 try {
-                    const docRef = await addDoc(collection(db, "relatorios"), dados);
-                    console.log("Documento salvo com ID: ", docRef.id);
+                    await addDoc(collection(db, "relatorios"), dados);
                     
                     $feedback.text('✅ Relatório enviado com sucesso!').removeClass('error').addClass('success').show();
-                    $form[0].reset(); // Limpa o formulário
-                    // Reseta os campos condicionais
+                    $form[0].reset();
+                    
                     $camposPublicador.hide();
                     $camposPioneiro.hide();
                     $campoQuantasPessoas.hide();
-                    $mesReferencia.val(getMesReferencia()); // Recalcula o mês
+                    $mesReferencia.val(getMesReferencia());
                     
                 } catch (error) {
                     console.error("Erro ao salvar no Firestore: ", error);
@@ -384,10 +367,9 @@
                 }
             });
 
-
             // --- INICIALIZAÇÃO DA PÁGINA ---
             $mesReferencia.val(getMesReferencia());
-            carregarNomesSimulado();
+            carregarNomesReais(); // ATUALIZAÇÃO: Chama a função de produção
         });
     </script>
 </body>
