@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - V2</title>
+    <title>Painel Admin - V2.1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
@@ -19,39 +19,23 @@
         .card-total .display-6 {
             font-weight: 600;
         }
-        /* Estilo para contagem de relatórios (Nova Feature) */
         .card-total small {
             color: #6c757d;
             font-size: 1rem;
             font-weight: 500;
         }
 
-        /* --- CSS para a Edição de Nome (Nova Feature) --- */
-        /* O input de nome fica oculto por padrão */
-        .nome-input {
-            display: none;
-        }
-        /* Quando a linha está em modo de edição, esconde o texto e mostra o input */
-        .nome-text.editing {
-            display: none;
-        }
-        .nome-text.editing + .nome-input {
-            display: inline-block;
-            width: 70%; /* Ajuste de largura */
-        }
-
-        /* Os botões de Salvar/Cancelar ficam ocultos por padrão */
-        .edit-buttons {
-            display: none;
-        }
-        /* Quando a linha está em modo de edição, esconde os botões padrão e mostra os de edição */
-        .default-buttons.editing {
-            display: none;
-        }
-        .edit-buttons.editing {
-            display: inline-flex; /* Usamos inline-flex para alinhamento */
-            gap: 5px;
-        }
+        /* --- CSS para a Edição de Nome (Feature V2) --- */
+        .nome-input { display: none; }
+        .nome-text.editing { display: none; }
+        .nome-text.editing + .nome-input { display: inline-block; width: 70%; }
+        .edit-buttons { display: none; }
+        .default-buttons.editing { display: none; }
+        .edit-buttons.editing { display: inline-flex; gap: 5px; }
+        
+        /* --- Estilo para a nova tabela de relatórios --- */
+        .table-reports { font-size: 0.9rem; }
+        .table-reports th { font-weight: 600; }
     </style>
 </head>
 <body>
@@ -79,7 +63,7 @@
     <div id="dashboardContainer" style="display: none;">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Painel Admin V2</a>
+                <a class="navbar-brand" href="#">Painel Admin V2.1</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -157,62 +141,102 @@
 
                 <div class="row">
                     <div class="col-lg-7">
-                        <h5 class="border-bottom pb-2 mb-3">Totais de Relatório de Campo</h5>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div class="card card-total h-100">
-                                    <div class="card-body">
-                                        <h6 class="card-title text-muted">Horas (Auxiliares)</h6>
-                                        <p class="display-6 text-primary" id="totalHorasAux">0</p>
-                                        <small id="countHorasAux">0 relataram</small>
+                        <h5 class="border-bottom pb-2 mb-3">Relatório de Campo</h5>
+                        
+                        <ul class="nav nav-tabs" id="fieldReportTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="true">Visão Geral (Totais)</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="individual-tab" data-bs-toggle="tab" data-bs-target="#individual-tab-pane" type="button" role="tab" aria-controls="individual-tab-pane" aria-selected="false">Relatórios Enviados (Grid)</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="fieldReportTabsContent">
+                            
+                            <div class="tab-pane fade show active" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0">
+                                <div class="p-3 border border-top-0 rounded-bottom">
+                                    <h6 class="text-muted">Totais Agregados</h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card card-total h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-muted">Horas (Auxiliares)</h6>
+                                                    <p class="display-6 text-primary" id="totalHorasAux">0</p>
+                                                    <small id="countHorasAux">0 relataram</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card card-total h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-muted">Estudos (Auxiliares)</h6>
+                                                    <p class="display-6 text-primary" id="totalEstudosAux">0</p>
+                                                    <small id="countEstudosAux">0 relataram</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card card-total h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-muted">Horas (Regulares)</h6>
+                                                    <p class="display-6 text-info" id="totalHorasReg">0</p>
+                                                    <small id="countHorasReg">0 relataram</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card card-total h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-muted">Estudos (Regulares)</h6>
+                                                    <p class="display-6 text-info" id="totalEstudosReg">0</p>
+                                                    <small id="countEstudosReg">0 relataram</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mb-3">
+                                            <div class="card card-total h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-muted">Estudos (Publicadores)</h6>
+                                                    <p class="display-6 text-secondary" id="totalEstudosPub">0</p>
+                                                    <small id="countEstudosPub">0 relataram</small>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
+
+                                    <h6 class="text-muted mt-3">Pendentes de Relatório</h6>
+                                    <div id="pendentes-body" style="max-height: 300px; overflow-y: auto;">
+                                        </div>
                                 </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="card card-total h-100">
-                                    <div class="card-body">
-                                        <h6 class="card-title text-muted">Estudos (Auxiliares)</h6>
-                                        <p class="display-6 text-primary" id="totalEstudosAux">0</p>
-                                        <small id="countEstudosAux">0 relataram</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="card card-total h-100">
-                                    <div class="card-body">
-                                        <h6 class="card-title text-muted">Horas (Regulares)</h6>
-                                        <p class="display-6 text-info" id="totalHorasReg">0</p>
-                                        <small id="countHorasReg">0 relataram</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="card card-total h-100">
-                                    <div class="card-body">
-                                        <h6 class="card-title text-muted">Estudos (Regulares)</h6>
-                                        <p class="display-6 text-info" id="totalEstudosReg">0</p>
-                                        <small id="countEstudosReg">0 relataram</small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 mb-3">
-                                <div class="card card-total h-100">
-                                    <div class="card-body">
-                                        <h6 class="card-title text-muted">Estudos (Publicadores)</h6>
-                                        <p class="display-6 text-secondary" id="totalEstudosPub">0</p>
-                                        <small id="countEstudosPub">0 relataram</small>
+                            
+                            <div class="tab-pane fade" id="individual-tab-pane" role="tabpanel" aria-labelledby="individual-tab" tabindex="0">
+                                <div class="p-3 border border-top-0 rounded-bottom">
+                                    <h6 class="text-muted">Lista de Envios Individuais</h6>
+                                    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                                        <table class="table table-sm table-striped table-hover table-reports">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nome</th>
+                                                    <th>Grupo</th>
+                                                    <th>Horas</th>
+                                                    <th>Estudos</th>
+                                                    <th>Participou?</th>
+                                                    <th>Observações</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="relatorios-enviados-body">
+                                                </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <h5 class="border-bottom pb-2 mb-3">Pendentes de Relatório de Campo</h5>
-                        <div id="pendentes-body" style="max-height: 300px; overflow-y: auto;">
-                            </div>
                     </div>
 
                     <div class="col-lg-5 border-start">
-                        <h5 class="border-bottom pb-2 mb-3">Totais de Assistência</h5>
+                        <h5 class="border-bottom pb-2 mb-3">Relatório de Assistência</h5>
                         <div class="row">
                             <div class="col-6 mb-3">
                                 <div class="card card-total h-100">
@@ -260,18 +284,18 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        // [PRODUÇÃO V2] JS (dashboard.html)
+        // [PRODUÇÃO V2.1] JS (dashboard.html)
 
         // --- 1. Configuração do Firebase ---
-        // [OBRIGATÓRIO] Substitua pela configuração do seu projeto Firebase
+        // (Usando as chaves reais fornecidas)
         const firebaseConfig = {
-  apiKey: "AIzaSyC2PtOb7RwgZGXP-zW3vf65AY1ivQ-eySA",
-  authDomain: "relatorio-de-campo-5c837.firebaseapp.com",
-  projectId: "relatorio-de-campo-5c837",
-  storageBucket: "relatorio-de-campo-5c837.firebasestorage.app",
-  messagingSenderId: "11198755551",
-  appId: "1:11198755551:web:6c7d4ab3ff3d860c27ef6a"
-};
+          apiKey: "AIzaSyC2PtOb7RwgZGXP-zW3vf65AY1ivQ-eySA",
+          authDomain: "relatorio-de-campo-5c837.firebaseapp.com",
+          projectId: "relatorio-de-campo-5c837",
+          storageBucket: "relatorio-de-campo-5c837.firebasestorage.app",
+          messagingSenderId: "11198755551",
+          appId: "1:11198755551:web:6c7d4ab3ff3d860c27ef6a"
+        };
 
         // --- 2. Inicialização do Firebase ---
         firebase.initializeApp(firebaseConfig);
@@ -302,50 +326,45 @@
         const loadButtonText = document.getElementById("loadButtonText");
         const loadButtonSpinner = document.getElementById("loadButtonSpinner");
         const pendentesBody = document.getElementById("pendentes-body");
+        const relatoriosEnviadosBody = document.getElementById("relatorios-enviados-body"); // [NOVO]
+        const reunioesBody = document.getElementById("reunioes-body");
 
         const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
         // =================================================================
-        // 4. LÓGICA DE AUTENTICAÇÃO
+        // 4. LÓGICA DE AUTENTICAÇÃO (Sem Alterações)
         // =================================================================
 
         auth.onAuthStateChanged(user => {
             if (user) {
-                // Usuário está logado
                 loginContainer.style.display = "none";
                 dashboardContainer.style.display = "block";
                 userEmail.textContent = user.email;
                 initDashboard();
             } else {
-                // Usuário está deslogado
                 loginContainer.style.display = "block";
                 dashboardContainer.style.display = "none";
                 userEmail.textContent = "";
             }
         });
 
-        // Handle Login
         loginForm.addEventListener("submit", (e) => {
             e.preventDefault();
             const email = document.getElementById("loginEmail").value;
             const password = document.getElementById("loginPassword").value;
             loginError.style.display = "none";
             loginSuccess.style.display = "none";
-            
             auth.signInWithEmailAndPassword(email, password)
                 .catch(error => {
-                    console.error("Erro de login:", error.message);
                     loginError.textContent = "Email ou senha inválidos. Tente novamente.";
                     loginError.style.display = "block";
                 });
         });
 
-        // Handle Logout
         logoutButton.addEventListener("click", () => {
             auth.signOut();
         });
 
-        // Handle "Esqueci a Senha"
         forgotPasswordLink.addEventListener("click", (e) => {
             e.preventDefault();
             const email = document.getElementById("loginEmail").value;
@@ -354,52 +373,44 @@
                 loginError.style.display = "block";
                 return;
             }
-
             loginError.style.display = "none";
             loginSuccess.style.display = "none";
-
             auth.sendPasswordResetEmail(email)
                 .then(() => {
                     loginSuccess.textContent = "Email de redefinição de senha enviado para " + email;
                     loginSuccess.style.display = "block";
                 })
                 .catch(error => {
-                    console.error("Erro ao enviar email:", error.message);
                     loginError.textContent = "Erro ao enviar email de redefinição. Verifique o email.";
                     loginError.style.display = "block";
                 });
         });
 
         // =================================================================
-        // 5. LÓGICA DO DASHBOARD (Inicialização)
+        // 5. LÓGICA DO DASHBOARD (Inicialização) (Sem Alterações)
         // =================================================================
 
         function initDashboard() {
             populateDateSelectors();
             loadPessoasCRUD();
-            loadAllReports(); // Carrega relatórios do mês atual na inicialização
-            
-            // Listeners
+            loadAllReports(); 
             addPessoaForm.addEventListener("submit", handleAddPessoa);
             loadReportsButton.addEventListener("click", loadAllReports);
         }
         
         function populateDateSelectors() {
-            // Usa a data atual (do cliente) para pré-selecionar
             const hoje = new Date();
-            const mesAtual = hoje.getMonth(); // 0-11
+            const mesAtual = hoje.getMonth();
             const anoAtual = hoje.getFullYear();
 
-            // Popula Meses
             nomesMeses.forEach((nome, index) => {
                 const option = document.createElement("option");
-                option.value = index; // 0-11
+                option.value = index; 
                 option.textContent = nome;
                 if (index === mesAtual) option.selected = true;
                 selectMes.appendChild(option);
             });
 
-            // Popula Anos (Ano atual + 3 anos para trás)
             for (let i = anoAtual; i >= anoAtual - 3; i--) {
                 const option = document.createElement("option");
                 option.value = i;
@@ -410,48 +421,37 @@
         }
 
         // =================================================================
-        // 6. CRUD (GERENCIAMENTO DE PESSOAS)
+        // 6. CRUD (GERENCIAMENTO DE PESSOAS) (Sem Alterações)
         // =================================================================
 
-        // C - Create
         async function handleAddPessoa(e) {
             e.preventDefault();
             const nomeInput = document.getElementById("addNome");
             const grupoInput = document.getElementById("addGrupo");
-            
             const nome = nomeInput.value.trim();
             const grupo = grupoInput.value;
-            
             if (!nome) return;
-
             try {
-                await pessoasCol.add({ 
-                    nome: nome, 
-                    grupo: grupo 
-                });
-                nomeInput.value = ''; // Limpa o campo
+                await pessoasCol.add({ nome: nome, grupo: grupo });
+                nomeInput.value = ''; 
             } catch (error) {
                 console.error("Erro ao adicionar pessoa: ", error);
                 alert("Erro ao adicionar pessoa.");
             }
         }
 
-        // R - Read (em tempo real com onSnapshot)
         function loadPessoasCRUD() {
             pessoasCol.orderBy("nome").onSnapshot(snapshot => {
-                pessoasBody.innerHTML = ""; // Limpa a tabela a cada atualização
+                pessoasBody.innerHTML = ""; 
                 if (snapshot.empty) {
                     pessoasBody.innerHTML = '<tr><td colspan="3">Nenhuma pessoa cadastrada.</td></tr>';
                     return;
                 }
-                
                 snapshot.forEach(doc => {
                     const pessoa = doc.data();
                     const id = doc.id;
-                    
                     const row = document.createElement("tr");
-                    row.dataset.id = id; // Armazena o ID na linha
-                    
+                    row.dataset.id = id; 
                     row.innerHTML = `
                         <td>
                             <span class="nome-text">${pessoa.nome}</span>
@@ -491,82 +491,56 @@
             });
         }
 
-        // U - Update (Grupo)
-        // Exposto globalmente para o 'onchange'
         window.handleUpdateGrupo = async (id, novoGrupo) => {
             try {
-                const docRef = pessoasCol.doc(id);
-                await docRef.update({ grupo: novoGrupo });
+                await pessoasCol.doc(id).update({ grupo: novoGrupo });
             } catch (error) {
                 console.error("Erro ao atualizar grupo: ", error);
-                alert("Erro ao atualizar grupo.");
             }
         };
         
-        // U - Update (Nome - Lógica de Toggle UI)
-        // Exposto globalmente para o 'onclick'
         window.toggleEditNome = (button, cancel = false) => {
-            const row = button.closest('tr'); // Encontra a linha (tr)
+            const row = button.closest('tr');
             const nomeText = row.querySelector('.nome-text');
             const nomeInput = row.querySelector('.nome-input');
             const defaultButtons = row.querySelector('.default-buttons');
             const editButtons = row.querySelector('.edit-buttons');
-
             if (cancel) {
-                // Reseta o valor do input para o valor original do texto
                 nomeInput.value = nomeText.textContent;
             }
-            
-            // Adiciona/Remove a classe 'editing'
             nomeText.classList.toggle('editing');
             nomeInput.classList.toggle('editing');
             defaultButtons.classList.toggle('editing');
             editButtons.classList.toggle('editing');
         };
 
-        // U - Update (Nome - Salvar)
-        // Exposto globalmente para o 'onclick'
         window.handleUpdateNome = async (button, id) => {
             const row = button.closest('tr');
             const nomeInput = row.querySelector('.nome-input');
             const novoNome = nomeInput.value.trim();
-            
-            if (!novoNome) {
-                alert("O nome não pode ficar em branco.");
-                return;
-            }
-
+            if (!novoNome) return;
             try {
-                const docRef = pessoasCol.doc(id);
-                await docRef.update({ nome: novoNome });
-                // Sucesso: o onSnapshot vai atualizar a UI, mas podemos
-                // fechar o modo de edição manualmente para resposta imediata
+                await pessoasCol.doc(id).update({ nome: novoNome });
                 window.toggleEditNome(button, false); 
             } catch (error) {
                 console.error("Erro ao atualizar nome: ", error);
-                alert("Erro ao salvar o nome.");
             }
         };
 
-        // D - Delete
-        // Exposto globalmente para o 'onclick'
         window.handleDeletePessoa = async (id, nome) => {
-            if (confirm(`Tem certeza que deseja excluir ${nome}? Esta ação não pode ser desfeita.`)) {
+            if (confirm(`Tem certeza que deseja excluir ${nome}?`)) {
                 try {
                     await pessoasCol.doc(id).delete();
-                    // O onSnapshot cuidará de remover a linha da UI
                 } catch (error) {
                     console.error("Erro ao excluir pessoa: ", error);
-                    alert("Erro ao excluir pessoa.");
                 }
             }
         };
 
         // =================================================================
-        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS
+        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS (MODIFICADA)
         // =================================================================
 
-        // Reseta a UI de Análise para "0" ou "Carregando"
         function resetAnalysisUI() {
             // Cards de Campo
             ['totalHorasAux', 'totalEstudosAux', 'totalHorasReg', 'totalEstudosReg', 'totalEstudosPub'].forEach(id => {
@@ -580,47 +554,47 @@
             document.getElementById('totalFimSemana').textContent = '0';
             document.getElementById('countMeioSemana').textContent = '0 reuniões';
             document.getElementById('countFimSemana').textContent = '0 reuniões';
+            
             // Tabelas
             pendentesBody.innerHTML = '<p class="text-muted">Carregando...</p>';
-            document.getElementById('reunioes-body').innerHTML = '<tr><td colspan="3" class="text-muted">Carregando...</td></tr>';
+            reunioesBody.innerHTML = '<tr><td colspan="3" class="text-muted">Carregando...</td></tr>';
+            
+            // [NOVO] Resetar a nova tabela de grid
+            relatoriosEnviadosBody.innerHTML = '<tr><td colspan="6" class="text-muted">Carregando...</td></tr>';
         }
 
-        // Função principal que dispara ambas as consultas
         async function loadAllReports() {
             resetAnalysisUI();
-            setLoadButtonLoading(true); // Ativa o spinner no botão
+            setLoadButtonLoading(true);
             
-            const mesIndex = parseInt(selectMes.value); // 0-11
+            const mesIndex = parseInt(selectMes.value); 
             const ano = parseInt(selectAno.value);
             const mesReferencia = `${nomesMeses[mesIndex]}/${ano}`;
 
-            // Datas de início e fim para consultas de timestamp
-            // Início: 1º dia do mês, 00:00:00
             const startDate = new Date(ano, mesIndex, 1, 0, 0, 0);
-            // Fim: Último dia do mês, 23:59:59
-            // (new Date(ano, mesIndex + 1, 0) -> Pega o dia 0 do mês seguinte = último dia do mês atual)
             const endDate = new Date(ano, mesIndex + 1, 0, 23, 59, 59);
 
             try {
-                // Dispara as duas consultas em paralelo
                 await Promise.all([
                     loadFieldReports(mesReferencia),
                     loadMeetingReports(startDate, endDate)
                 ]);
             } catch (error) {
                 console.error("Erro ao carregar relatórios:", error);
-                alert("Um erro ocorreu ao carregar os dados de análise.");
             } finally {
-                setLoadButtonLoading(false); // Desativa o spinner no botão
+                setLoadButtonLoading(false); 
             }
         }
 
-        // Consulta e Cálculo de Relatórios de CAMPO
+        // [MODIFICADO] Consulta e Cálculo de Relatórios de CAMPO
         async function loadFieldReports(mesReferencia) {
+            // [NOVO] Limpa a tabela de relatórios individuais
+            relatoriosEnviadosBody.innerHTML = ''; 
+            
             try {
-                // Consulta 1: Lista Mestra de Pessoas (Fonte da Verdade)
+                // Consulta 1: Lista Mestra de Pessoas
                 const pessoasSnapshot = await pessoasCol.get();
-                const allPessoas = new Map(); // Map<nome, grupo>
+                const allPessoas = new Map(); 
                 pessoasSnapshot.forEach(doc => {
                     allPessoas.set(doc.data().nome, doc.data().grupo);
                 });
@@ -634,13 +608,18 @@
                     estudosPub: 0, countPub: 0
                 };
                 
-                const nomesQueEnviaram = new Set(); // Para o cálculo de pendentes
+                const nomesQueEnviaram = new Set(); 
+
+                // [NOVO] Verifica se a consulta de relatórios está vazia
+                if (relatoriosSnapshot.empty) {
+                    relatoriosEnviadosBody.innerHTML = '<tr><td colspan="6" class="text-muted">Nenhum relatório enviado para este mês.</td></tr>';
+                }
 
                 relatoriosSnapshot.forEach(doc => {
                     const rel = doc.data();
                     nomesQueEnviaram.add(rel.nome);
 
-                    // Agrega totais e contagens
+                    // Agrega totais e contagens (Lógica antiga)
                     if (rel.grupo === "Pioneiro Auxiliar") {
                         totais.horasAux += (rel.horas || 0);
                         totais.estudosAux += (rel.estudos || 0);
@@ -651,37 +630,51 @@
                         totais.countReg++;
                     } else if (rel.grupo === "Publicador") {
                         totais.estudosPub += (rel.estudos || 0);
-                        // Contamos o publicador apenas se ele marcou "Sim"
                         if (rel.participou === "Sim" || (rel.estudos || 0) > 0) {
                             totais.countPub++; 
                         }
                     }
+
+                    // --- [NOVA LÓGICA] ---
+                    // Popula a tabela de Grid (Aba 2)
+                    const row = document.createElement('tr');
+                    // Usamos '||' para exibir um traço '—' se o campo não existir (ex: 'horas' para Publicador)
+                    row.innerHTML = `
+                        <td>${rel.nome}</td>
+                        <td>${rel.grupo}</td>
+                        <td>${rel.horas || '—'}</td>
+                        <td>${rel.estudos || 0}</td>
+                        <td>${rel.participou || '—'}</td>
+                        <td>${rel.observacoes || ''}</td>
+                    `;
+                    relatoriosEnviadosBody.appendChild(row);
+                    // --- Fim da Nova Lógica ---
                 });
 
-                // Atualiza Cards de Totais de Campo
+                // Atualiza Cards de Totais (Lógica antiga)
                 document.getElementById('totalHorasAux').textContent = totais.horasAux;
                 document.getElementById('totalEstudosAux').textContent = totais.estudosAux;
                 document.getElementById('totalHorasReg').textContent = totais.horasReg;
                 document.getElementById('totalEstudosReg').textContent = totais.estudosReg;
                 document.getElementById('totalEstudosPub').textContent = totais.estudosPub;
                 
-                // Atualiza Contagem de Relatórios (Nova Feature)
                 document.getElementById('countHorasAux').textContent = `${totais.countAux} relataram`;
                 document.getElementById('countEstudosAux').textContent = `${totais.countAux} relataram`;
                 document.getElementById('countHorasReg').textContent = `${totais.countReg} relataram`;
                 document.getElementById('countEstudosReg').textContent = `${totais.countReg} relataram`;
                 document.getElementById('countEstudosPub').textContent = `${totais.countPub} relataram`;
                 
-                // Cálculo e Renderização de Pendentes (Agrupados - V2)
+                // Cálculo de Pendentes (Lógica antiga)
                 renderPendentes(allPessoas, nomesQueEnviaram);
 
             } catch (error) {
                 console.error("Erro ao carregar relatórios de campo: ", error);
                 pendentesBody.innerHTML = '<p class="text-danger">Erro ao carregar pendentes.</p>';
+                relatoriosEnviadosBody.innerHTML = '<tr><td colspan="6" class="text-danger">Erro ao carregar relatórios.</td></tr>';
             }
         }
         
-        // Função Helper para renderizar pendentes agrupados
+        // Renderização de Pendentes (Sem Alterações)
         function renderPendentes(allPessoas, nomesQueEnviaram) {
             const pendentes = {
                 "Publicador": [],
@@ -691,16 +684,14 @@
 
             allPessoas.forEach((grupo, nome) => {
                 if (!nomesQueEnviaram.has(nome)) {
-                    // Verifica se o grupo existe no objeto, para segurança
                     if (pendentes.hasOwnProperty(grupo)) {
                         pendentes[grupo].push(nome);
                     }
                 }
             });
 
-            pendentesBody.innerHTML = ''; // Limpa a lista
+            pendentesBody.innerHTML = ''; 
             let totalPendentes = 0;
-            
             const gruposParaExibir = ["Pioneiro Regular", "Pioneiro Auxiliar", "Publicador"];
             
             gruposParaExibir.forEach(grupo => {
@@ -708,7 +699,7 @@
                 if (lista.length > 0) {
                     totalPendentes += lista.length;
                     let html = `<h6 class="text-muted">${grupo} (${lista.length})</h6><ul class="list-group list-group-flush mb-3">`;
-                    lista.sort().forEach(nome => { // Ordena alfabeticamente
+                    lista.sort().forEach(nome => { 
                         html += `<li class="list-group-item py-1">${nome}</li>`;
                     });
                     html += `</ul>`;
@@ -721,17 +712,13 @@
             }
         }
 
-        // Consulta e Cálculo de Relatórios de REUNIÃO
+        // Relatórios de REUNIÃO (Sem Alterações)
         async function loadMeetingReports(startDate, endDate) {
-            const reunioesBody = document.getElementById('reunioes-body');
+            reunioesBody.innerHTML = '';
             try {
-                reunioesBody.innerHTML = '';
-                
-                // Converte datas JS para Timestamps Firestore (necessário para a consulta)
                 const startTimestamp = firebase.firestore.Timestamp.fromDate(startDate);
                 const endTimestamp = firebase.firestore.Timestamp.fromDate(endDate);
 
-                // A consulta 'where' com 'orderBy' no mesmo campo é ideal
                 const q = reunioesCol
                     .where("dataTimestamp", ">=", startTimestamp)
                     .where("dataTimestamp", "<=", endTimestamp)
@@ -750,8 +737,6 @@
 
                 snapshot.forEach(doc => {
                     const reuniao = doc.data();
-                    
-                    // Popula a tabela
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${reuniao.data}</td>
@@ -760,7 +745,6 @@
                     `;
                     reunioesBody.appendChild(row);
 
-                    // Soma os totais
                     if (reuniao.tipo === "Meio de Semana") {
                         totalMeioSemana += reuniao.quantidade;
                         countMeioSemana++;
@@ -770,7 +754,6 @@
                     }
                 });
 
-                // Atualiza Cards de Totais de Reunião
                 document.getElementById('totalMeioSemana').textContent = totalMeioSemana;
                 document.getElementById('totalFimSemana').textContent = totalFimSemana;
                 document.getElementById('countMeioSemana').textContent = `${countMeioSemana} reuniões`;
@@ -782,7 +765,7 @@
             }
         }
 
-        // Função utilitária para botão de "Carregar"
+        // Função utilitária (Sem Alterações)
         function setLoadButtonLoading(isLoading) {
             if (isLoading) {
                 loadReportsButton.disabled = true;
@@ -798,4 +781,3 @@
     </script>
 </body>
 </html>
-
