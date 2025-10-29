@@ -3,773 +3,798 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Relatórios</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Painel Admin - V2</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <style>
-        :root {
-            --primary-color: #007bff;
-            --success-color: #28a745;
-            --error-color: #dc3545;
-            --warn-color: #ffc107;
-            --border-color: #ccc;
-            --background-color: #f8f9fa;
-            --form-bg-color: #fff;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-        }
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--background-color);
-            color: #333;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-        }
-        .login-container, .dashboard-container {
-            width: 100%;
-            max-width: 800px;
-            background-color: var(--form-bg-color);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px var(--shadow-color);
-            box-sizing: border-box;
-            margin-top: 20px;
-        }
-        .dashboard-container {
-            max-width: 1200px;
-            /* [INDICADOR DE AMBIENTE: TESTE 2 (Novos Totais)] */
-            border: 2px solid var(--success-color);
+            background-color: #f8f9fa;
         }
 
-        .dashboard-container { display: none; }
-        h1 { text-align: center; color: var(--primary-color); margin-bottom: 25px; }
-        h2 { color: var(--primary-color); border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        h3 { margin-top: 0; }
-
-        .form-group { margin-bottom: 1.25rem; }
-        label { display: block; margin-bottom: .5rem; font-weight: 500; color: #555; }
-        
-        input, select, button {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: var(--primary-color);
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
-        button:hover { background-color: #0056b3; }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        #logoutBtn {
-            background-color: var(--error-color);
-            width: auto;
-            padding: 8px 15px;
-        }
-        #logoutBtn:hover { background-color: #c82333; }
-
-        .error-message {
-            color: var(--error-color);
+        /* --- Estilo dos Cards de Total --- */
+        .card-total {
             text-align: center;
-            margin-top: 10px;
+        }
+        .card-total .display-6 {
+            font-weight: 600;
+        }
+        /* Estilo para contagem de relatórios (Nova Feature) */
+        .card-total small {
+            color: #6c757d;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* --- CSS para a Edição de Nome (Nova Feature) --- */
+        /* O input de nome fica oculto por padrão */
+        .nome-input {
             display: none;
         }
-        #forgotPassword {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
+        /* Quando a linha está em modo de edição, esconde o texto e mostra o input */
+        .nome-text.editing {
+            display: none;
         }
-        #forgotPassword a {
-            color: var(--primary-color);
-            text-decoration: none;
-            cursor: pointer;
-        }
-        #forgotPassword a:hover { text-decoration: underline; }
-
-        .admin-section {
-            background-color: #fdfdfd;
-            border: 1px solid #eee;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px; 
+        .nome-text.editing + .nome-input {
+            display: inline-block;
+            width: 70%; /* Ajuste de largura */
         }
 
-        /* Gerenciamento de Pessoas */
-        #addPessoaForm {
-            display: flex;
-            gap: 15px;
-            align-items: flex-end;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+        /* Os botões de Salvar/Cancelar ficam ocultos por padrão */
+        .edit-buttons {
+            display: none;
         }
-        #addPessoaForm .form-group { flex: 2; margin-bottom: 0; min-width: 200px; }
-        #addPessoaForm button { flex: 1; min-width: 150px; }
-
-        .table-container { overflow-x: auto; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
+        /* Quando a linha está em modo de edição, esconde os botões padrão e mostra os de edição */
+        .default-buttons.editing {
+            display: none;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        th { background-color: #f4f4f4; }
-        td:last-child {
-            text-align: center;
-            width: 100px;
-        }
-        .delete-btn {
-            background-color: var(--warn-color);
-            color: #333;
-            width: auto;
-            font-size: 14px;
-            padding: 5px 10px;
-        }
-        .delete-btn:hover { background-color: #e0a800; }
-        .group-select {
-            font-size: 14px;
-            padding: 5px;
-        }
-
-        /* Seção de Visão Geral e Pendentes */
-        #monthSelectorForm {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .reports-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-        
-        .totals-grid {
-            display: grid;
-            /* MUDANÇA: 2 colunas para melhor organização */
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        .total-card {
-            background-color: #fff;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .total-card h4 {
-            margin: 0 0 5px 0;
-            color: #555;
-            font-size: 14px;
-        }
-        .total-card p {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        
-        #pending-list h5 {
-            color: #333;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-            margin-top: 15px;
-        }
-        #pending-list ul {
-            padding-left: 20px;
-            font-size: 14px;
-        }
-        
-        /* Ajustes de Responsividade */
-        @media (max-width: 900px) {
-            .reports-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        @media (max-width: 600px) {
-            #addPessoaForm {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            #monthSelectorForm {
-                flex-direction: column;
-            }
-            .totals-grid {
-                grid-template-columns: 1fr;
-            }
+        .edit-buttons.editing {
+            display: inline-flex; /* Usamos inline-flex para alinhamento */
+            gap: 5px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. TELA DE LOGIN -->
-    <div class="login-container" id="loginContainer">
-        <h1>Login do Dashboard</h1>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Senha</label>
-                <input type="password" id="password" required>
-            </div>
-            <button type="submit">Entrar</button>
-            <div id="loginError" class="error-message"></div>
-            <div id="forgotPassword">
-                <a id="forgotPasswordLink">Esqueci minha senha</a>
-            </div>
-        </form>
+    <div id="loginContainer" class="container" style="max-width: 450px; margin-top: 15vh;">
+        <div class="card p-4 shadow-sm">
+            <h3 class="text-center mb-4">Acesso Restrito</h3>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="loginEmail" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="loginEmail" required>
+                </div>
+                <div class="mb-3">
+                    <label for="loginPassword" class="form-label">Senha</label>
+                    <input type="password" class="form-control" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Entrar</button>
+            </form>
+            <a href="#" id="forgotPasswordLink" class="text-center mt-3 d-block">Esqueceu a senha?</a>
+            <div id="loginError" class="alert alert-danger mt-3" style="display: none;"></div>
+            <div id="loginSuccess" class="alert alert-success mt-3" style="display: none;"></div>
+        </div>
     </div>
 
-    <!-- 2. TELA DO DASHBOARD -->
-    <div class="dashboard-container" id="dashboardContainer">
-        <div class="dashboard-header">
-            <h1>Dashboard de Relatórios</h1>
-            <button id="logoutBtn">Sair</button>
-        </div>
-
-        <!-- Seção do Seletor de Mês -->
-        <div class="admin-section">
-            <h2>Visão Geral do Mês</h2>
-            <form id="monthSelectorForm">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="selectMes">Mês</label>
-                    <select id="selectMes"></select>
+    <div id="dashboardContainer" style="display: none;">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Painel Admin V2</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <span class="navbar-text" id="userEmail"></span>
+                        </li>
+                    </ul>
+                    <button id="logoutButton" class="btn btn-outline-danger">
+                        <i class="bi bi-box-arrow-right"></i> Sair
+                    </button>
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label for="selectAno">Ano</label>
-                    <select id="selectAno"></select>
-                </div>
-            </form>
-        </div>
+            </div>
+        </nav>
 
-        <!-- Seção Visão Geral de Campo e Pendentes -->
-        <div class="admin-section">
-            <div class="reports-grid">
-                <!-- Coluna 1: Totais de Campo -->
-                <div id="totals-section">
-                    <h3>Totais de Relatório de Campo</h3>
-                    
-                    <!-- MUDANÇA: Cards de Totais Reorganizados -->
-                    <div class="totals-grid">
-                        <div class="total-card">
-                            <h4>Horas (Auxiliares)</h4>
-                            <p id="totalHorasAux">0</p>
+        <main class="container-fluid my-4">
+            
+            <section id="manager" class="card p-3 p-md-4 mb-4">
+                <h4><i class="bi bi-people-fill"></i> Gerenciar Pessoas (Lista Mestra)</h4>
+                <p>Aqui você gerencia quem pode enviar relatórios e a qual grupo pertencem.</p>
+                <form id="addPessoaForm" class="row g-3">
+                    <div class="col-md-5">
+                        <label for="addNome" class="form-label visually-hidden">Nome</label>
+                        <input type="text" id="addNome" class="form-control" placeholder="Nome Completo" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="addGrupo" class="form-label visually-hidden">Grupo</label>
+                        <select id="addGrupo" class="form-select" required>
+                            <option value="Publicador" selected>Publicador</option>
+                            <option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option>
+                            <option value="Pioneiro Regular">Pioneiro Regular</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-plus-lg"></i> Adicionar
+                        </button>
+                    </div>
+                </form>
+                <hr>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome</th>
+                                <th>Grupo (Atual)</th>
+                                <th style="width: 180px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pessoas-body">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="analysis" class="card p-3 p-md-4">
+                <h4><i class="bi bi-bar-chart-line-fill"></i> Análise de Relatórios</h4>
+                <div class="row g-3 mb-3 p-3 bg-light border rounded">
+                    <div class="col-md-5">
+                        <label for="selectMes" class="form-label">Mês</label>
+                        <select id="selectMes" class="form-select"></select>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="selectAno" class="form-label">Ano</label>
+                        <select id="selectAno" class="form-select"></select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button id="loadReportsButton" class="btn btn-primary w-100">
+                            <span id="loadButtonText"><i class="bi bi-arrow-clockwise"></i> Carregar</span>
+                            <span id="loadButtonSpinner" class="spinner-border spinner-border-sm" role="status" style="display: none;"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-7">
+                        <h5 class="border-bottom pb-2 mb-3">Totais de Relatório de Campo</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card card-total h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted">Horas (Auxiliares)</h6>
+                                        <p class="display-6 text-primary" id="totalHorasAux">0</p>
+                                        <small id="countHorasAux">0 relataram</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card card-total h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted">Estudos (Auxiliares)</h6>
+                                        <p class="display-6 text-primary" id="totalEstudosAux">0</p>
+                                        <small id="countEstudosAux">0 relataram</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card card-total h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted">Horas (Regulares)</h6>
+                                        <p class="display-6 text-info" id="totalHorasReg">0</p>
+                                        <small id="countHorasReg">0 relataram</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card card-total h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted">Estudos (Regulares)</h6>
+                                        <p class="display-6 text-info" id="totalEstudosReg">0</p>
+                                        <small id="countEstudosReg">0 relataram</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <div class="card card-total h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted">Estudos (Publicadores)</h6>
+                                        <p class="display-6 text-secondary" id="totalEstudosPub">0</p>
+                                        <small id="countEstudosPub">0 relataram</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="total-card">
-                            <h4>Estudos (Auxiliares)</h4>
-                            <p id="totalEstudosAux">0</p>
+
+                        <h5 class="border-bottom pb-2 mb-3">Pendentes de Relatório de Campo</h5>
+                        <div id="pendentes-body" style="max-height: 300px; overflow-y: auto;">
+                            </div>
+                    </div>
+
+                    <div class="col-lg-5 border-start">
+                        <h5 class="border-bottom pb-2 mb-3">Totais de Assistência</h5>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="card card-total h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted">Meio de Semana</h6>
+                                        <p class="display-6 text-success" id="totalMeioSemana">0</p>
+                                        <small id="countMeioSemana">0 reuniões</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="card card-total h-100">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted">Fim de Semana</h6>
+                                        <p class="display-6 text-success" id="totalFimSemana">0</p>
+                                        <small id="countFimSemana">0 reuniões</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="total-card">
-                            <h4>Horas (Regulares)</h4>
-                            <p id="totalHorasReg">0</p>
-                        </div>
-                        <div class="total-card">
-                            <h4>Estudos (Regulares)</h4>
-                            <p id="totalEstudosReg">0</p>
-                        </div>
-                        <div class="total-card">
-                            <h4>Estudos (Publicadores)</h4>
-                            <p id="totalEstudosPub">0</p>
+
+                        <h5 class="border-bottom pb-2 mb-3">Lista de Reuniões (Mês)</h5>
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-sm table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Tipo</th>
+                                        <th>Qtd.</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reunioes-body">
+                                    </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <!-- Coluna 2: Pendentes -->
-                <div id="pending-section">
-                    <h3>Relatórios Pendentes de Campo</h3>
-                    <div id="pending-list"><p>Carregando...</p></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- NOVO: Seção Visão Geral de Reuniões -->
-        <div class="admin-section">
-            <h3>Totais de Assistência (Reuniões)</h3>
-            <div class="totals-grid">
-                <div class="total-card">
-                    <h4>Total (Meio de Semana)</h4>
-                    <p id="totalAssistenciaMS">0</p>
-                    <small id="countMS">0 reuniões</small>
-                </div>
-                <div class="total-card">
-                    <h4>Total (Fim de Semana)</h4>
-                    <p id="totalAssistenciaFS">0</p>
-                    <small id="countFS">0 reuniões</small>
-                </div>
-            </div>
-            <div class="table-container" style="margin-top: 20px; max-height: 300px; overflow-y: auto;">
-                <table id="reunioesTable">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Tipo</th>
-                            <th>Assistência</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reunioes-body">
-                        <tr><td colspan="3" style="text-align: center;">Carregando...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-
-        <!-- SEÇÃO: GERENCIAMENTO DE PESSOAS -->
-        <div class="admin-section">
-            <h2>Gerenciar Pessoas (Relatório de Campo)</h2>
-            <form id="addPessoaForm">
-                <div class="form-group">
-                    <label for="nomePessoa">Nome</label>
-                    <input type="text" id="nomePessoa" placeholder="Nome completo da pessoa" required>
-                </div>
-                <div class="form-group">
-                    <label for="grupoPessoa">Grupo</label>
-                    <select id="grupoPessoa" required>
-                        <option value="Publicador">Publicador</option>
-                        <option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option>
-                        <option value="Pioneiro Regular">Pioneiro Regular</option>
-                    </select>
-                </div>
-                <button type="submit">Adicionar Pessoa</button>
-            </form>
-
-            <div class="table-container">
-                <table id="pessoasTable">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Grupo Atual</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pessoas-body">
-                        <tr><td colspan="3" style="text-align: center;">Carregando...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            </section>
+        </main>
     </div>
 
-    <!-- SDK Firebase Modular -->
-    <script type="module">
-        // Importações do Firebase SDK v9+
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            onAuthStateChanged, 
-            signOut,
-            sendPasswordResetEmail
-        } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            doc, 
-            updateDoc, 
-            deleteDoc, 
-            onSnapshot,
-            getDocs,
-            query,
-            where,
-            orderBy,
-            Timestamp // NOVO: Importa Timestamp para consultas de data
-        } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
-        // 1. Configuração do Firebase
+    <script>
+        // [PRODUÇÃO V2] JS (dashboard.html)
+
+        // --- 1. Configuração do Firebase ---
+        // [OBRIGATÓRIO] Substitua pela configuração do seu projeto Firebase
         const firebaseConfig = {
-            apiKey: "AIzaSyC2PtOb7RwgZGXP-zW3vf65AY1ivQ-eySA",
-            authDomain: "relatorio-de-campo-5c837.firebaseapp.com",
-            projectId: "relatorio-de-campo-5c837",
-            storageBucket: "relatorio-de-campo-5c837.firebasestorage.app",
-            messagingSenderId: "11198755551",
-            appId: "1:11198755551:web:6c7d4ab3ff3d860c27ef6a"
+            apiKey: "SEU_API_KEY",
+            authDomain: "SEU_AUTH_DOMAIN",
+            projectId: "SEU_PROJECT_ID",
+            storageBucket: "SEU_STORAGE_BUCKET",
+            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+            appId: "SEU_APP_ID"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // --- 2. Inicialização do Firebase ---
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const pessoasCol = db.collection("pessoas");
+        const relatoriosCol = db.collection("relatorios");
+        const reunioesCol = db.collection("reunioes");
 
-        // Referências do DOM (Login)
-        const loginContainer = document.getElementById('loginContainer');
-        const dashboardContainer = document.getElementById('dashboardContainer');
-        const loginForm = document.getElementById('loginForm');
-        const loginError = document.getElementById('loginError');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+        // --- 3. Elementos do DOM ---
+        const loginContainer = document.getElementById("loginContainer");
+        const dashboardContainer = document.getElementById("dashboardContainer");
+        const loginForm = document.getElementById("loginForm");
+        const loginError = document.getElementById("loginError");
+        const loginSuccess = document.getElementById("loginSuccess");
+        const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+        const userEmail = document.getElementById("userEmail");
+        const logoutButton = document.getElementById("logoutButton");
 
-        // Referências do DOM (Gerenciador de Pessoas)
-        const addPessoaForm = document.getElementById('addPessoaForm');
-        const nomePessoaInput = document.getElementById('nomePessoa');
-        const grupoPessoaSelect = document.getElementById('grupoPessoa');
-        const pessoasBody = document.getElementById('pessoas-body');
+        // Gerenciamento
+        const addPessoaForm = document.getElementById("addPessoaForm");
+        const pessoasBody = document.getElementById("pessoas-body");
 
-        // Referências do DOM (Relatórios de Campo)
-        const selectMes = document.getElementById('selectMes');
-        const selectAno = document.getElementById('selectAno');
-        const totalHorasAux = document.getElementById('totalHorasAux');
-        const totalHorasReg = document.getElementById('totalHorasReg');
-        // MUDANÇA: Novos IDs para totais de estudos
-        const totalEstudosAux = document.getElementById('totalEstudosAux');
-        const totalEstudosReg = document.getElementById('totalEstudosReg');
-        const totalEstudosPub = document.getElementById('totalEstudosPub');
-        const pendingList = document.getElementById('pending-list');
+        // Análise
+        const selectMes = document.getElementById("selectMes");
+        const selectAno = document.getElementById("selectAno");
+        const loadReportsButton = document.getElementById("loadReportsButton");
+        const loadButtonText = document.getElementById("loadButtonText");
+        const loadButtonSpinner = document.getElementById("loadButtonSpinner");
+        const pendentesBody = document.getElementById("pendentes-body");
 
-        // NOVO: Referências do DOM (Relatórios de Reunião)
-        const totalAssistenciaMS = document.getElementById('totalAssistenciaMS');
-        const totalAssistenciaFS = document.getElementById('totalAssistenciaFS');
-        const countMS = document.getElementById('countMS');
-        const countFS = document.getElementById('countFS');
-        const reunioesBody = document.getElementById('reunioes-body');
+        const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-        // Coleções do Firestore
-        const pessoasCol = collection(db, "pessoas");
-        const relatoriosCol = collection(db, "relatorios");
-        const reunioesCol = collection(db, "reunioes"); // NOVO
+        // =================================================================
+        // 4. LÓGICA DE AUTENTICAÇÃO
+        // =================================================================
 
-        // --- LÓGICA DE AUTENTICAÇÃO ---
-        onAuthStateChanged(auth, (user) => {
+        auth.onAuthStateChanged(user => {
             if (user) {
-                loginContainer.style.display = 'none';
-                dashboardContainer.style.display = 'block';
+                // Usuário está logado
+                loginContainer.style.display = "none";
+                dashboardContainer.style.display = "block";
+                userEmail.textContent = user.email;
                 initDashboard();
             } else {
-                loginContainer.style.display = 'block';
-                dashboardContainer.style.display = 'none';
+                // Usuário está deslogado
+                loginContainer.style.display = "block";
+                dashboardContainer.style.display = "none";
+                userEmail.textContent = "";
             }
         });
-        loginForm.addEventListener('submit', async (e) => {
+
+        // Handle Login
+        loginForm.addEventListener("submit", (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            loginError.style.display = 'none';
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                loginError.textContent = "Erro: " + error.message;
-                loginError.style.display = 'block';
-            }
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+            loginError.style.display = "none";
+            loginSuccess.style.display = "none";
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .catch(error => {
+                    console.error("Erro de login:", error.message);
+                    loginError.textContent = "Email ou senha inválidos. Tente novamente.";
+                    loginError.style.display = "block";
+                });
         });
-        logoutBtn.addEventListener('click', () => signOut(auth));
-        forgotPasswordLink.addEventListener('click', async () => {
-            const email = document.getElementById('email').value;
+
+        // Handle Logout
+        logoutButton.addEventListener("click", () => {
+            auth.signOut();
+        });
+
+        // Handle "Esqueci a Senha"
+        forgotPasswordLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            const email = document.getElementById("loginEmail").value;
             if (!email) {
-                alert("Por favor, digite seu email no campo 'Email' antes de clicar."); return;
+                loginError.textContent = "Digite seu email no campo 'Email' para redefinir a senha.";
+                loginError.style.display = "block";
+                return;
             }
-            try {
-                await sendPasswordResetEmail(auth, email);
-                alert(`Email de redefinição enviado para ${email}.`);
-            } catch (error) {
-                alert("Erro: " + error.message);
-            }
+
+            loginError.style.display = "none";
+            loginSuccess.style.display = "none";
+
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    loginSuccess.textContent = "Email de redefinição de senha enviado para " + email;
+                    loginSuccess.style.display = "block";
+                })
+                .catch(error => {
+                    console.error("Erro ao enviar email:", error.message);
+                    loginError.textContent = "Erro ao enviar email de redefinição. Verifique o email.";
+                    loginError.style.display = "block";
+                });
         });
 
-        // --- INICIALIZAÇÃO DO DASHBOARD ---
-        const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-        
+        // =================================================================
+        // 5. LÓGICA DO DASHBOARD (Inicialização)
+        // =================================================================
+
         function initDashboard() {
-            loadPessoas();
-            setupMonthSelector();
-            loadAllReports(); // Carrega TODOS os relatórios (campo e reunião)
+            populateDateSelectors();
+            loadPessoasCRUD();
+            loadAllReports(); // Carrega relatórios do mês atual na inicialização
+            
+            // Listeners
+            addPessoaForm.addEventListener("submit", handleAddPessoa);
+            loadReportsButton.addEventListener("click", loadAllReports);
         }
         
-        // --- LÓGICA DE DATA (REGRA DO DIA 20) ---
-        function getMesReferenciaAtual() {
+        function populateDateSelectors() {
+            // Usa a data atual (do cliente) para pré-selecionar
             const hoje = new Date();
-            const dia = hoje.getDate();
-            let dataReferencia = new Date();
-            if (dia <= 20) {
-                dataReferencia.setMonth(hoje.getMonth() - 1);
+            const mesAtual = hoje.getMonth(); // 0-11
+            const anoAtual = hoje.getFullYear();
+
+            // Popula Meses
+            nomesMeses.forEach((nome, index) => {
+                const option = document.createElement("option");
+                option.value = index; // 0-11
+                option.textContent = nome;
+                if (index === mesAtual) option.selected = true;
+                selectMes.appendChild(option);
+            });
+
+            // Popula Anos (Ano atual + 3 anos para trás)
+            for (let i = anoAtual; i >= anoAtual - 3; i--) {
+                const option = document.createElement("option");
+                option.value = i;
+                option.textContent = i;
+                if (i === anoAtual) option.selected = true;
+                selectAno.appendChild(option);
             }
-            const mes = dataReferencia.toLocaleString('pt-BR', { month: 'long' });
-            const ano = dataReferencia.getFullYear();
-            const mesCapitalizado = mes.charAt(0).toUpperCase() + mes.slice(1);
-            return { mes: mesCapitalizado, ano: ano, formatado: `${mesCapitalizado}/${ano}` };
         }
 
-        // --- LÓGICA DE RELATÓRIOS (TOTAIS E PENDENTES) ---
+        // =================================================================
+        // 6. CRUD (GERENCIAMENTO DE PESSOAS)
+        // =================================================================
 
-        // 1. Configura os seletores de Mês/Ano
-        function setupMonthSelector() {
-            const anoAtual = new Date().getFullYear();
+        // C - Create
+        async function handleAddPessoa(e) {
+            e.preventDefault();
+            const nomeInput = document.getElementById("addNome");
+            const grupoInput = document.getElementById("addGrupo");
             
-            selectMes.innerHTML = '';
-            meses.forEach(mes => selectMes.append(new Option(mes, mes)));
+            const nome = nomeInput.value.trim();
+            const grupo = grupoInput.value;
             
-            selectAno.innerHTML = '';
-            for (let ano = anoAtual; ano >= anoAtual - 2; ano--) {
-                selectAno.append(new Option(ano, ano));
-            }
-
-            const refAtual = getMesReferenciaAtual();
-            selectMes.value = refAtual.mes;
-            selectAno.value = refAtual.ano;
-
-            // MUDANÇA: Adiciona listener para carregar TODOS os relatórios
-            selectMes.addEventListener('change', loadAllReports);
-            selectAno.addEventListener('change', loadAllReports);
-        }
-
-        // 2. Função principal para carregar TODOS os dados
-        function loadAllReports() {
-            loadFieldReports();
-            loadMeetingReports();
-        }
-
-        // 3. Carrega os relatórios de CAMPO (com totais corrigidos)
-        async function loadFieldReports() {
-            const mesSelecionado = selectMes.value;
-            const anoSelecionado = selectAno.value;
-            const mesReferencia = `${mesSelecionado}/${anoSelecionado}`;
-
-            // MUDANÇA: Reseta os contadores (totais corrigidos)
-            let totais = {
-                horasAux: 0, estudosAux: 0,
-                horasReg: 0, estudosReg: 0,
-                estudosPub: 0
-            };
-            pendingList.innerHTML = '<p>Calculando...</p>';
+            if (!nome) return;
 
             try {
-                // Passo 1: Buscar relatórios de campo do mês selecionado
-                const q = query(relatoriosCol, where("mesReferencia", "==", mesReferencia));
-                const relatoriosSnapshot = await getDocs(q);
+                await pessoasCol.add({ 
+                    nome: nome, 
+                    grupo: grupo 
+                });
+                nomeInput.value = ''; // Limpa o campo
+            } catch (error) {
+                console.error("Erro ao adicionar pessoa: ", error);
+                alert("Erro ao adicionar pessoa.");
+            }
+        }
 
-                const relatoriosEnviados = new Map();
+        // R - Read (em tempo real com onSnapshot)
+        function loadPessoasCRUD() {
+            pessoasCol.orderBy("nome").onSnapshot(snapshot => {
+                pessoasBody.innerHTML = ""; // Limpa a tabela a cada atualização
+                if (snapshot.empty) {
+                    pessoasBody.innerHTML = '<tr><td colspan="3">Nenhuma pessoa cadastrada.</td></tr>';
+                    return;
+                }
                 
+                snapshot.forEach(doc => {
+                    const pessoa = doc.data();
+                    const id = doc.id;
+                    
+                    const row = document.createElement("tr");
+                    row.dataset.id = id; // Armazena o ID na linha
+                    
+                    row.innerHTML = `
+                        <td>
+                            <span class="nome-text">${pessoa.nome}</span>
+                            <input type="text" class="form-control form-control-sm nome-input" value="${pessoa.nome}">
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm" onchange="window.handleUpdateGrupo('${id}', this.value)">
+                                <option value="Publicador" ${pessoa.grupo === 'Publicador' ? 'selected' : ''}>Publicador</option>
+                                <option value="Pioneiro Auxiliar" ${pessoa.grupo === 'Pioneiro Auxiliar' ? 'selected' : ''}>Pioneiro Auxiliar</option>
+                                <option value="Pioneiro Regular" ${pessoa.grupo === 'Pioneiro Regular' ? 'selected' : ''}>Pioneiro Regular</option>
+                            </select>
+                        </td>
+                        <td>
+                            <div class="default-buttons">
+                                <button class="btn btn-warning btn-sm" onclick="window.toggleEditNome(this)">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="window.handleDeletePessoa('${id}', '${pessoa.nome}')">
+                                    <i class="bi bi-trash-fill"></i>
+                                </button>
+                            </div>
+                            <div class="edit-buttons">
+                                <button class="btn btn-success btn-sm" onclick="window.handleUpdateNome(this, '${id}')">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="window.toggleEditNome(this, true)">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    pessoasBody.appendChild(row);
+                });
+            }, error => {
+                console.error("Erro ao carregar pessoas (snapshot): ", error);
+                alert("Erro crítico ao carregar a lista de pessoas.");
+            });
+        }
+
+        // U - Update (Grupo)
+        // Exposto globalmente para o 'onchange'
+        window.handleUpdateGrupo = async (id, novoGrupo) => {
+            try {
+                const docRef = pessoasCol.doc(id);
+                await docRef.update({ grupo: novoGrupo });
+            } catch (error) {
+                console.error("Erro ao atualizar grupo: ", error);
+                alert("Erro ao atualizar grupo.");
+            }
+        };
+        
+        // U - Update (Nome - Lógica de Toggle UI)
+        // Exposto globalmente para o 'onclick'
+        window.toggleEditNome = (button, cancel = false) => {
+            const row = button.closest('tr'); // Encontra a linha (tr)
+            const nomeText = row.querySelector('.nome-text');
+            const nomeInput = row.querySelector('.nome-input');
+            const defaultButtons = row.querySelector('.default-buttons');
+            const editButtons = row.querySelector('.edit-buttons');
+
+            if (cancel) {
+                // Reseta o valor do input para o valor original do texto
+                nomeInput.value = nomeText.textContent;
+            }
+            
+            // Adiciona/Remove a classe 'editing'
+            nomeText.classList.toggle('editing');
+            nomeInput.classList.toggle('editing');
+            defaultButtons.classList.toggle('editing');
+            editButtons.classList.toggle('editing');
+        };
+
+        // U - Update (Nome - Salvar)
+        // Exposto globalmente para o 'onclick'
+        window.handleUpdateNome = async (button, id) => {
+            const row = button.closest('tr');
+            const nomeInput = row.querySelector('.nome-input');
+            const novoNome = nomeInput.value.trim();
+            
+            if (!novoNome) {
+                alert("O nome não pode ficar em branco.");
+                return;
+            }
+
+            try {
+                const docRef = pessoasCol.doc(id);
+                await docRef.update({ nome: novoNome });
+                // Sucesso: o onSnapshot vai atualizar a UI, mas podemos
+                // fechar o modo de edição manualmente para resposta imediata
+                window.toggleEditNome(button, false); 
+            } catch (error) {
+                console.error("Erro ao atualizar nome: ", error);
+                alert("Erro ao salvar o nome.");
+            }
+        };
+
+        // D - Delete
+        // Exposto globalmente para o 'onclick'
+        window.handleDeletePessoa = async (id, nome) => {
+            if (confirm(`Tem certeza que deseja excluir ${nome}? Esta ação não pode ser desfeita.`)) {
+                try {
+                    await pessoasCol.doc(id).delete();
+                    // O onSnapshot cuidará de remover a linha da UI
+                } catch (error) {
+                    console.error("Erro ao excluir pessoa: ", error);
+                    alert("Erro ao excluir pessoa.");
+                }
+            }
+        };
+
+        // =================================================================
+        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS
+        // =================================================================
+
+        // Reseta a UI de Análise para "0" ou "Carregando"
+        function resetAnalysisUI() {
+            // Cards de Campo
+            ['totalHorasAux', 'totalEstudosAux', 'totalHorasReg', 'totalEstudosReg', 'totalEstudosPub'].forEach(id => {
+                document.getElementById(id).textContent = '0';
+            });
+            ['countHorasAux', 'countEstudosAux', 'countHorasReg', 'countEstudosReg', 'countEstudosPub'].forEach(id => {
+                document.getElementById(id).textContent = '0 relataram';
+            });
+            // Cards de Reunião
+            document.getElementById('totalMeioSemana').textContent = '0';
+            document.getElementById('totalFimSemana').textContent = '0';
+            document.getElementById('countMeioSemana').textContent = '0 reuniões';
+            document.getElementById('countFimSemana').textContent = '0 reuniões';
+            // Tabelas
+            pendentesBody.innerHTML = '<p class="text-muted">Carregando...</p>';
+            document.getElementById('reunioes-body').innerHTML = '<tr><td colspan="3" class="text-muted">Carregando...</td></tr>';
+        }
+
+        // Função principal que dispara ambas as consultas
+        async function loadAllReports() {
+            resetAnalysisUI();
+            setLoadButtonLoading(true); // Ativa o spinner no botão
+            
+            const mesIndex = parseInt(selectMes.value); // 0-11
+            const ano = parseInt(selectAno.value);
+            const mesReferencia = `${nomesMeses[mesIndex]}/${ano}`;
+
+            // Datas de início e fim para consultas de timestamp
+            // Início: 1º dia do mês, 00:00:00
+            const startDate = new Date(ano, mesIndex, 1, 0, 0, 0);
+            // Fim: Último dia do mês, 23:59:59
+            // (new Date(ano, mesIndex + 1, 0) -> Pega o dia 0 do mês seguinte = último dia do mês atual)
+            const endDate = new Date(ano, mesIndex + 1, 0, 23, 59, 59);
+
+            try {
+                // Dispara as duas consultas em paralelo
+                await Promise.all([
+                    loadFieldReports(mesReferencia),
+                    loadMeetingReports(startDate, endDate)
+                ]);
+            } catch (error) {
+                console.error("Erro ao carregar relatórios:", error);
+                alert("Um erro ocorreu ao carregar os dados de análise.");
+            } finally {
+                setLoadButtonLoading(false); // Desativa o spinner no botão
+            }
+        }
+
+        // Consulta e Cálculo de Relatórios de CAMPO
+        async function loadFieldReports(mesReferencia) {
+            try {
+                // Consulta 1: Lista Mestra de Pessoas (Fonte da Verdade)
+                const pessoasSnapshot = await pessoasCol.get();
+                const allPessoas = new Map(); // Map<nome, grupo>
+                pessoasSnapshot.forEach(doc => {
+                    allPessoas.set(doc.data().nome, doc.data().grupo);
+                });
+
+                // Consulta 2: Relatórios Enviados do Mês
+                const relatoriosSnapshot = await relatoriosCol.where("mesReferencia", "==", mesReferencia).get();
+                
+                let totais = {
+                    horasAux: 0, estudosAux: 0, countAux: 0,
+                    horasReg: 0, estudosReg: 0, countReg: 0,
+                    estudosPub: 0, countPub: 0
+                };
+                
+                const nomesQueEnviaram = new Set(); // Para o cálculo de pendentes
+
                 relatoriosSnapshot.forEach(doc => {
-                    const relatorio = doc.data();
-                    relatoriosEnviados.set(relatorio.nome, relatorio);
+                    const rel = doc.data();
+                    nomesQueEnviaram.add(rel.nome);
 
-                    // Passo 2: Calcular Totais (LÓGICA CORRIGIDA)
-                    const grupo = relatorio.grupo;
-                    const estudos = relatorio.estudos || 0;
-                    const horas = relatorio.horas || 0;
-
-                    if (grupo === 'Publicador') {
-                        totais.estudosPub += estudos;
-                    } else if (grupo === 'Pioneiro Auxiliar') {
-                        totais.horasAux += horas;
-                        totais.estudosAux += estudos;
-                    } else if (grupo === 'Pioneiro Regular') {
-                        totais.horasReg += horas;
-                        totais.estudosReg += estudos;
+                    // Agrega totais e contagens
+                    if (rel.grupo === "Pioneiro Auxiliar") {
+                        totais.horasAux += (rel.horas || 0);
+                        totais.estudosAux += (rel.estudos || 0);
+                        totais.countAux++;
+                    } else if (rel.grupo === "Pioneiro Regular") {
+                        totais.horasReg += (rel.horas || 0);
+                        totais.estudosReg += (rel.estudos || 0);
+                        totais.countReg++;
+                    } else if (rel.grupo === "Publicador") {
+                        totais.estudosPub += (rel.estudos || 0);
+                        // Contamos o publicador apenas se ele marcou "Sim"
+                        if (rel.participou === "Sim" || (rel.estudos || 0) > 0) {
+                            totais.countPub++; 
+                        }
                     }
                 });
 
-                // Atualiza os cards de Totais (LÓGICA CORRIGIDA)
-                totalHorasAux.textContent = totais.horasAux;
-                totalEstudosAux.textContent = totais.estudosAux;
-                totalHorasReg.textContent = totais.horasReg;
-                totalEstudosReg.textContent = totais.estudosReg;
-                totalEstudosPub.textContent = totais.estudosPub;
-
-                // Passo 3: Calcular Pendentes (função auxiliar não mudou)
-                await calcularPendentes(relatoriosEnviados);
+                // Atualiza Cards de Totais de Campo
+                document.getElementById('totalHorasAux').textContent = totais.horasAux;
+                document.getElementById('totalEstudosAux').textContent = totais.estudosAux;
+                document.getElementById('totalHorasReg').textContent = totais.horasReg;
+                document.getElementById('totalEstudosReg').textContent = totais.estudosReg;
+                document.getElementById('totalEstudosPub').textContent = totais.estudosPub;
+                
+                // Atualiza Contagem de Relatórios (Nova Feature)
+                document.getElementById('countHorasAux').textContent = `${totais.countAux} relataram`;
+                document.getElementById('countEstudosAux').textContent = `${totais.countAux} relataram`;
+                document.getElementById('countHorasReg').textContent = `${totais.countReg} relataram`;
+                document.getElementById('countEstudosReg').textContent = `${totais.countReg} relataram`;
+                document.getElementById('countEstudosPub').textContent = `${totais.countPub} relataram`;
+                
+                // Cálculo e Renderização de Pendentes (Agrupados - V2)
+                renderPendentes(allPessoas, nomesQueEnviaram);
 
             } catch (error) {
                 console.error("Erro ao carregar relatórios de campo: ", error);
-                pendingList.innerHTML = '<p style="color: red;">Erro ao carregar pendentes.</p>';
+                pendentesBody.innerHTML = '<p class="text-danger">Erro ao carregar pendentes.</p>';
             }
         }
         
-        // 4. Função Auxiliar: Calcular Pendentes (sem alteração)
-        async function calcularPendentes(relatoriosEnviados) {
-            let pendentes = { Publicador: [], "Pioneiro Auxiliar": [], "Pioneiro Regular": [] };
-            const pessoasSnapshot = await getDocs(query(pessoasCol, orderBy("nome")));
+        // Função Helper para renderizar pendentes agrupados
+        function renderPendentes(allPessoas, nomesQueEnviaram) {
+            const pendentes = {
+                "Publicador": [],
+                "Pioneiro Auxiliar": [],
+                "Pioneiro Regular": []
+            };
 
-            if (pessoasSnapshot.empty) {
-                pendingList.innerHTML = '<p>Nenhuma pessoa cadastrada.</p>'; return;
-            }
-            pessoasSnapshot.forEach(doc => {
-                const pessoa = doc.data();
-                if (!relatoriosEnviados.has(pessoa.nome)) {
-                    if (pendentes[pessoa.grupo]) { pendentes[pessoa.grupo].push(pessoa.nome); }
+            allPessoas.forEach((grupo, nome) => {
+                if (!nomesQueEnviaram.has(nome)) {
+                    // Verifica se o grupo existe no objeto, para segurança
+                    if (pendentes.hasOwnProperty(grupo)) {
+                        pendentes[grupo].push(nome);
+                    }
                 }
             });
 
-            let htmlPendentes = '';
-            if (pendentes.Publicador.length > 0) {
-                htmlPendentes += '<h5>Publicadores</h5><ul>' + pendentes.Publicador.map(n => `<li>${n}</li>`).join('') + '</ul>';
-            }
-            if (pendentes["Pioneiro Auxiliar"].length > 0) {
-                htmlPendentes += '<h5>Pioneiros Auxiliares</h5><ul>' + pendentes["Pioneiro Auxiliar"].map(n => `<li>${n}</li>`).join('') + '</ul>';
-            }
-            if (pendentes["Pioneiro Regular"].length > 0) {
-                htmlPendentes += '<h5>Pioneiros Regulares</h5><ul>' + pendentes["Pioneiro Regular"].map(n => `<li>${n}</li>`).join('') + '</ul>';
-            }
-            if (htmlPendentes === '') {
-                pendingList.innerHTML = '<p style="color: green;">✅ Todos os relatórios de campo foram enviados!</p>';
-            } else {
-                pendingList.innerHTML = htmlPendentes;
+            pendentesBody.innerHTML = ''; // Limpa a lista
+            let totalPendentes = 0;
+            
+            const gruposParaExibir = ["Pioneiro Regular", "Pioneiro Auxiliar", "Publicador"];
+            
+            gruposParaExibir.forEach(grupo => {
+                const lista = pendentes[grupo];
+                if (lista.length > 0) {
+                    totalPendentes += lista.length;
+                    let html = `<h6 class="text-muted">${grupo} (${lista.length})</h6><ul class="list-group list-group-flush mb-3">`;
+                    lista.sort().forEach(nome => { // Ordena alfabeticamente
+                        html += `<li class="list-group-item py-1">${nome}</li>`;
+                    });
+                    html += `</ul>`;
+                    pendentesBody.innerHTML += html;
+                }
+            });
+            
+            if (totalPendentes === 0) {
+                pendentesBody.innerHTML = '<p class="text-success">Todos enviaram o relatório!</p>';
             }
         }
 
-        // 5. NOVO: Carrega os relatórios de REUNIÃO
-        async function loadMeetingReports() {
-            const mesIndex = meses.indexOf(selectMes.value); // Ex: "Outubro" -> 9
-            const ano = parseInt(selectAno.value);
-            
-            // Cria os Timestamps de início e fim do mês
-            // Início: 1º dia do mês, 00:00:00
-            const inicioMes = Timestamp.fromDate(new Date(ano, mesIndex, 1));
-            // Fim: Último dia do mês, 23:59:59
-            const fimMes = Timestamp.fromDate(new Date(ano, mesIndex + 1, 0, 23, 59, 59));
-
-            // Reseta os contadores
-            let totalMS = 0; let countMSval = 0;
-            let totalFS = 0; let countFSval = 0;
-            reunioesBody.innerHTML = '';
-
+        // Consulta e Cálculo de Relatórios de REUNIÃO
+        async function loadMeetingReports(startDate, endDate) {
+            const reunioesBody = document.getElementById('reunioes-body');
             try {
-                // Busca reuniões ONDE dataTimestamp está ENTRE inicioMes E fimMes
-                const q = query(reunioesCol,
-                    where("dataTimestamp", ">=", inicioMes),
-                    where("dataTimestamp", "<=", fimMes),
-                    orderBy("dataTimestamp", "desc") // Mais recentes primeiro
-                );
+                reunioesBody.innerHTML = '';
                 
-                const snapshot = await getDocs(q);
-                
+                // Converte datas JS para Timestamps Firestore (necessário para a consulta)
+                const startTimestamp = firebase.firestore.Timestamp.fromDate(startDate);
+                const endTimestamp = firebase.firestore.Timestamp.fromDate(endDate);
+
+                // A consulta 'where' com 'orderBy' no mesmo campo é ideal
+                const q = reunioesCol
+                    .where("dataTimestamp", ">=", startTimestamp)
+                    .where("dataTimestamp", "<=", endTimestamp)
+                    .orderBy("dataTimestamp", "asc");
+
+                const snapshot = await q.get();
+
+                let totalMeioSemana = 0;
+                let countMeioSemana = 0;
+                let totalFimSemana = 0;
+                let countFimSemana = 0;
+
                 if (snapshot.empty) {
-                    reunioesBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhuma reunião registrada para este mês.</td></tr>';
+                    reunioesBody.innerHTML = '<tr><td colspan="3" class="text-muted">Nenhuma reunião encontrada.</td></tr>';
                 }
 
                 snapshot.forEach(doc => {
                     const reuniao = doc.data();
-                    const quantidade = reuniao.quantidade || 0;
                     
-                    // Adiciona à tabela
-                    const row = reunioesBody.insertRow();
+                    // Popula a tabela
+                    const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${reuniao.data}</td>
                         <td>${reuniao.tipo}</td>
-                        <td>${quantidade}</td>
+                        <td><strong>${reuniao.quantidade}</strong></td>
                     `;
-                    
-                    // Soma aos totais
-                    if (reuniao.tipo === 'Meio de Semana') {
-                        totalMS += quantidade;
-                        countMSval++;
-                    } else if (reuniao.tipo === 'Fim de Semana') {
-                        totalFS += quantidade;
-                        countFSval++;
+                    reunioesBody.appendChild(row);
+
+                    // Soma os totais
+                    if (reuniao.tipo === "Meio de Semana") {
+                        totalMeioSemana += reuniao.quantidade;
+                        countMeioSemana++;
+                    } else if (reuniao.tipo === "Fim de Semana") {
+                        totalFimSemana += reuniao.quantidade;
+                        countFimSemana++;
                     }
                 });
-                
-                // Atualiza os cards de Totais de Reunião
-                totalAssistenciaMS.textContent = totalMS;
-                countMS.textContent = `${countMSval} reuniões`;
-                totalAssistenciaFS.textContent = totalFS;
-                countFS.textContent = `${countFSval} reuniões`;
+
+                // Atualiza Cards de Totais de Reunião
+                document.getElementById('totalMeioSemana').textContent = totalMeioSemana;
+                document.getElementById('totalFimSemana').textContent = totalFimSemana;
+                document.getElementById('countMeioSemana').textContent = `${countMeioSemana} reuniões`;
+                document.getElementById('countFimSemana').textContent = `${countFimSemana} reuniões`;
 
             } catch (error) {
                 console.error("Erro ao carregar relatórios de reunião: ", error);
-                reunioesBody.innerHTML = '<tr><td colspan="3" style="color: red;">Erro ao carregar reuniões.</td></tr>';
+                reunioesBody.innerHTML = '<tr><td colspan="3" class="text-danger">Erro ao carregar lista.</td></tr>';
             }
         }
 
-
-        // --- LÓGICA DE GERENCIAMENTO DE PESSOAS (CRUD) ---
-        addPessoaForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const nome = nomePessoaInput.value.trim();
-            const grupo = grupoPessoaSelect.value;
-            if (nome === "") return;
-            try {
-                await addDoc(pessoasCol, { nome: nome, grupo: grupo });
-                addPessoaForm.reset();
-            } catch (error) {
-                alert("Erro ao adicionar pessoa.");
+        // Função utilitária para botão de "Carregar"
+        function setLoadButtonLoading(isLoading) {
+            if (isLoading) {
+                loadReportsButton.disabled = true;
+                loadButtonText.style.display = 'none';
+                loadButtonSpinner.style.display = 'inline-block';
+            } else {
+                loadReportsButton.disabled = false;
+                loadButtonText.style.display = 'inline-block';
+                loadButtonSpinner.style.display = 'none';
             }
-        });
-
-        function loadPessoas() {
-            const q = query(pessoasCol, orderBy("nome"));
-            onSnapshot(q, (snapshot) => {
-                pessoasBody.innerHTML = '';
-                if (snapshot.empty) {
-                    pessoasBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhuma pessoa cadastrada.</td></tr>';
-                    return;
-                }
-                snapshot.forEach(docSnapshot => {
-                    const pessoa = docSnapshot.data();
-                    const docId = docSnapshot.id;
-                    
-                    const row = document.createElement('tr');
-                    
-                    const cellNome = document.createElement('td');
-                    cellNome.textContent = pessoa.nome;
-                    
-                    const cellGrupo = document.createElement('td');
-                    const selectGrupo = document.createElement('select');
-                    selectGrupo.className = 'group-select';
-                    selectGrupo.innerHTML = `
-                        <option value="Publicador">Publicador</option>
-                        <option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option>
-                        <option value="Pioneiro Regular">Pioneiro Regular</option>
-                    `;
-                    selectGrupo.value = pessoa.grupo;
-                    
-                    selectGrupo.addEventListener('change', async () => {
-                        const docRef = doc(db, "pessoas", docId);
-                        try {
-                            await updateDoc(docRef, { grupo: selectGrupo.value });
-                        } catch (error) {
-                            console.error("Erro ao atualizar grupo: ", error);
-                        }
-                    });
-                    cellGrupo.appendChild(selectGrupo);
-
-                    const cellAcoes = document.createElement('td');
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.textContent = 'Excluir';
-                    deleteBtn.className = 'delete-btn';
-                    
-                    deleteBtn.addEventListener('click', async () => {
-                        if (confirm(`Tem certeza que deseja excluir ${pessoa.nome}?`)) {
-                            const docRef = doc(db, "pessoas", docId);
-                            try {
-                                await deleteDoc(docRef);
-                            } catch (error) {
-                                console.error("Erro ao excluir pessoa: ", error);
-                            }
-                        }
-                    });
-                    cellAcoes.appendChild(deleteBtn);
-
-                    row.appendChild(cellNome);
-                    row.appendChild(cellGrupo);
-                    row.appendChild(cellAcoes);
-                    pessoasBody.appendChild(row);
-                });
-
-                // Recarrega os relatórios de campo (para pendentes)
-                loadFieldReports(); 
-            });
         }
+
     </script>
 </body>
 </html>
-
