@@ -72,7 +72,7 @@
         
         <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Painel Admin V2.6</a>
+                <a class="navbar-brand" href="#">Painel Admin V2.7</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -275,7 +275,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        // [PRODUÇÃO V2.6] (JS V2.5 + Lógica de Média)
+        // [PRODUÇÃO V2.7] (JS V2.6 + Reversão SOMA + Ordenação Grupo/Nome)
 
         // --- 1. Configuração do Firebase ---
         const firebaseConfig = {
@@ -353,7 +353,7 @@
         function populateDateSelectors() { const hoje = new Date(); const mesAtual = hoje.getMonth(); const anoAtual = hoje.getFullYear(); nomesMeses.forEach((nome, index) => { const option = document.createElement("option"); option.value = index; option.textContent = nome; if (index === mesAtual) option.selected = true; selectMes.appendChild(option); }); for (let i = anoAtual; i >= anoAtual - 3; i--) { const option = document.createElement("option"); option.value = i; option.textContent = i; if (i === anoAtual) option.selected = true; selectAno.appendChild(option); } }
 
         // =================================================================
-        // 6. CRUD (GERENCIAMENTO DE PESSOAS) (Sem Alterações V2.5)
+        // 6. CRUD (GERENCIAMENTO DE PESSOAS) (Sem Alterações)
         // =================================================================
         async function handleAddPessoa(e) { e.preventDefault(); const nomeInput = document.getElementById("addNome"); const grupoInput = document.getElementById("addGrupo"); const nome = nomeInput.value.trim(); const grupo = grupoInput.value; if (!nome) return; try { await pessoasCol.add({ nome: nome, grupo: grupo }); nomeInput.value = ''; } catch (error) { console.error("Erro ao adicionar pessoa: ", error); alert("Erro ao adicionar pessoa."); } }
         function loadPessoasCRUD() { pessoasCol.orderBy("nome").onSnapshot(snapshot => { pessoasBody.innerHTML = ""; if (snapshot.empty) { pessoasBody.innerHTML = '<tr><td colspan="3">Nenhuma pessoa cadastrada.</td></tr>'; return; } snapshot.forEach(doc => { const pessoa = doc.data(); const id = doc.id; const row = document.createElement("tr"); row.dataset.id = id; row.innerHTML = `
@@ -393,7 +393,7 @@
         window.handleDeletePessoa = async (id, nome) => { if (confirm(`Tem certeza que deseja excluir ${nome}?`)) { try { await pessoasCol.doc(id).delete(); } catch (error) { console.error("Erro ao excluir pessoa: ", error); } } };
 
         // =================================================================
-        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS (Refatorada V2.6)
+        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS (Refatorada V2.7)
         // =================================================================
 
         function resetAnalysisUI() {
@@ -429,7 +429,9 @@
             }
         }
 
-        // (Relatórios de CAMPO - Sem Alterações V2.5)
+        // =================================================================
+        // [V2.7] MODIFICADO: Relatórios de CAMPO (Ordenação Grupo/Nome)
+        // =================================================================
         async function loadFieldReports(mesReferencia) {
             relatoriosEnviadosBody.innerHTML = ''; 
             try {
@@ -443,6 +445,10 @@
                 
                 let totais = { horasAux: 0, estudosAux: 0, countAux: 0, horasReg: 0, estudosReg: 0, countReg: 0, estudosPub: 0, countPub: 0 };
                 const nomesQueEnviaram = new Set(); 
+                
+                // --- [V2.7] INÍCIO DA MUDANÇA: Coleta e Ordenação ---
+                const reportsArray = []; 
+                // ---
 
                 if (relatoriosSnapshot.empty) {
                     relatoriosEnviadosBody.innerHTML = '<tr><td colspan="7" class="text-muted">Nenhum relatório enviado para este mês.</td></tr>';
@@ -453,6 +459,7 @@
                     const id = doc.id;
                     nomesQueEnviaram.add(rel.nome);
 
+                    // Soma os totais (Lógica V2.5)
                     if (rel.grupo === "Pioneiro Auxiliar") {
                         totais.horasAux += (rel.horas || 0);
                         totais.estudosAux += (rel.estudos || 0);
@@ -468,8 +475,28 @@
                         }
                     }
 
+                    // --- [V2.7] MUDANÇA: Adiciona ao array ao invés de renderizar ---
+                    reportsArray.push({ id: id, ...rel });
+                    // ---
+                });
+
+                // --- [V2.7] MUDANÇA: Ordena o array (Primeiro por Grupo, depois por Nome) ---
+                reportsArray.sort((a, b) => {
+                    // Ordena por Grupo
+                    if (a.grupo < b.grupo) return -1;
+                    if (a.grupo > b.grupo) return 1;
+                    
+                    // Se os grupos forem iguais, ordena por Nome
+                    if (a.nome < b.nome) return -1;
+                    if (a.nome > b.nome) return 1;
+
+                    return 0;
+                });
+
+                // --- [V2.7] MUDANÇA: Renderiza o array ordenado ---
+                reportsArray.forEach(rel => {
                     const row = document.createElement('tr');
-                    row.dataset.id = id; 
+                    row.dataset.id = rel.id; 
                     row.innerHTML = `
                         <td data-field="nome">${rel.nome}</td>
                         <td data-field="grupo">${rel.grupo}</td>
@@ -479,10 +506,10 @@
                         <td data-field="observacoes">${rel.observacoes || ''}</td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn btn-outline-primary btn-sm" onclick="window.openEditRelatorioModal('${id}')">
+                                <button class="btn btn-outline-primary btn-sm" onclick="window.openEditRelatorioModal('${rel.id}')">
                                     <i class="bi bi-pencil-fill"></i>
                                 </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="window.deleteRelatorio('${id}', '${rel.nome}')">
+                                <button class="btn btn-outline-danger btn-sm" onclick="window.deleteRelatorio('${rel.id}', '${rel.nome}')">
                                     <i class="bi bi-trash-fill"></i>
                                 </button>
                             </div>
@@ -490,7 +517,9 @@
                     `;
                     relatoriosEnviadosBody.appendChild(row);
                 });
+                // --- [V2.7] FIM DAS MUDANÇAS (CAMPO) ---
 
+                // Atualiza os cards (Sem alteração)
                 document.getElementById('totalHorasAux').textContent = totais.horasAux; document.getElementById('totalEstudosAux').textContent = totais.estudosAux; document.getElementById('totalHorasReg').textContent = totais.horasReg; document.getElementById('totalEstudosReg').textContent = totais.estudosReg; document.getElementById('totalEstudosPub').textContent = totais.estudosPub;
                 document.getElementById('countHorasAux').textContent = `${totais.countAux} relataram`; document.getElementById('countEstudosAux').textContent = `${totais.countAux} relataram`; document.getElementById('countHorasReg').textContent = `${totais.countReg} relataram`; document.getElementById('countEstudosReg').textContent = `${totais.countReg} relataram`; document.getElementById('countEstudosPub').textContent = `${totais.countPub} relataram`;
                 
@@ -508,7 +537,7 @@
 
         
         // =================================================================
-        // [V2.6] MODIFICADO: Relatórios de REUNIÃO (Cálculo de Média)
+        // [V2.7] MODIFICADO: Relatórios de REUNIÃO (Reversão para SOMA)
         // =================================================================
         async function loadMeetingReports(startDate, endDate) {
             reunioesBody.innerHTML = '';
@@ -559,15 +588,14 @@
                     }
                 });
                 
-                // --- [V2.6] INÍCIO DA MUDANÇA: Cálculo de Média ---
-                // Calcula a média; se count for 0, média é 0.
-                const mediaMeioSemana = (countMeioSemana > 0) ? (totalMeioSemana / countMeioSemana) : 0;
-                const mediaFimSemana = (countFimSemana > 0) ? (totalFimSemana / countFimSemana) : 0;
+                // --- [V2.7] INÍCIO DA MUDANÇA: Exibe SOMA (Total) ao invés de Média ---
+                // const mediaMeioSemana = (countMeioSemana > 0) ? (totalMeioSemana / countMeioSemana) : 0; // V2.6
+                // const mediaFimSemana = (countFimSemana > 0) ? (totalFimSemana / countFimSemana) : 0; // V2.6
 
-                // Atualiza os cards com a Média, arredondada para o inteiro mais próximo
-                document.getElementById('totalMeioSemana').textContent = mediaMeioSemana.toFixed(0);
-                document.getElementById('totalFimSemana').textContent = mediaFimSemana.toFixed(0);
-                // --- [V2.6] FIM DA MUDANÇA ---
+                // Atualiza os cards com a SOMA total
+                document.getElementById('totalMeioSemana').textContent = totalMeioSemana;
+                document.getElementById('totalFimSemana').textContent = totalFimSemana;
+                // --- [V2.7] FIM DA MUDANÇA ---
                 
                 // Atualiza a contagem de reuniões
                 document.getElementById('countMeioSemana').textContent = `${countMeioSemana} reuniões`;
@@ -762,4 +790,3 @@
     </script>
 </body>
 </html>
-
