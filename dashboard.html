@@ -72,7 +72,7 @@
         
         <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Painel Admin V2.7</a>
+                <a class="navbar-brand" href="#">Painel Admin V2.8</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -146,8 +146,8 @@
                                             <div class="row">
                                                 <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Horas (Auxiliares)</h6><p class="display-6 text-primary" id="totalHorasAux">0</p><small id="countHorasAux">0 relataram</small></div></div></div>
                                                 <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Auxiliares)</h6><p class="display-6 text-primary" id="totalEstudosAux">0</p><small id="countEstudosAux">0 relataram</small></div></div></div>
-                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Horas (Regulares)</h6><p class="display-6 text-primary" id="totalHorasReg">0</p><small id="countHorasReg">0 relataram</small></div></div></div>
-                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Regulares)</h6><p class="display-6 text-primary" id="totalEstudosReg">0</p><small id="countEstudosReg">0 relataram</small></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Horas (Reg./Esp.)</h6><p class="display-6 text-primary" id="totalHorasReg">0</p><small id="countHorasReg">0 relataram</small></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Reg./Esp.)</h6><p class="display-6 text-primary" id="totalEstudosReg">0</p><small id="countEstudosReg">0 relataram</small></div></div></div>
                                                 <div class="col-12 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Publicadores)</h6><p class="display-6 text-primary" id="totalEstudosPub">0</p><small id="countEstudosPub">0 relataram</small></div></div></div>
                                             </div>
                                             <h6 class="text-muted mt-3">Pendentes de Relatório</h6>
@@ -222,6 +222,7 @@
                                     <option value="Publicador" selected>Publicador</option>
                                     <option value="Pioneiro Auxiliar">Pioneiro Auxiliar</option>
                                     <option value="Pioneiro Regular">Pioneiro Regular</option>
+                                    <option value="Pioneiro Especial">Pioneiro Especial</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
@@ -275,7 +276,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        // [PRODUÇÃO V2.7] (JS V2.6 + Reversão SOMA + Ordenação Grupo/Nome)
+        // [PRODUÇÃO V2.8] (Inclui suporte a Pioneiro Especial)
 
         // --- 1. Configuração do Firebase ---
         const firebaseConfig = {
@@ -322,7 +323,7 @@
         const editModalSaveButton = document.getElementById('editModalSaveButton');
 
         // =================================================================
-        // 4. LÓGICA DE AUTENTICAÇÃO (Sem Alterações)
+        // 4. LÓGICA DE AUTENTICAÇÃO
         // =================================================================
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -341,7 +342,7 @@
         forgotPasswordLink.addEventListener("click", (e) => { e.preventDefault(); const email = document.getElementById("loginEmail").value; if (!email) { loginError.textContent = "Digite seu email no campo 'Email' para redefinir a senha."; loginError.style.display = "block"; return; } loginError.style.display = "none"; loginSuccess.style.display = "none"; auth.sendPasswordResetEmail(email).then(() => { loginSuccess.textContent = "Email de redefinição de senha enviado para " + email; loginSuccess.style.display = "block"; }).catch(error => { loginError.textContent = "Erro ao enviar email de redefinição. Verifique o email."; loginError.style.display = "block"; }); });
 
         // =================================================================
-        // 5. LÓGICA DO DASHBOARD (Inicialização) (Sem Alterações)
+        // 5. LÓGICA DO DASHBOARD (Inicialização)
         // =================================================================
         function initDashboard() {
             populateDateSelectors();
@@ -353,10 +354,25 @@
         function populateDateSelectors() { const hoje = new Date(); const mesAtual = hoje.getMonth(); const anoAtual = hoje.getFullYear(); nomesMeses.forEach((nome, index) => { const option = document.createElement("option"); option.value = index; option.textContent = nome; if (index === mesAtual) option.selected = true; selectMes.appendChild(option); }); for (let i = anoAtual; i >= anoAtual - 3; i--) { const option = document.createElement("option"); option.value = i; option.textContent = i; if (i === anoAtual) option.selected = true; selectAno.appendChild(option); } }
 
         // =================================================================
-        // 6. CRUD (GERENCIAMENTO DE PESSOAS) (Sem Alterações)
+        // 6. CRUD (GERENCIAMENTO DE PESSOAS)
         // =================================================================
         async function handleAddPessoa(e) { e.preventDefault(); const nomeInput = document.getElementById("addNome"); const grupoInput = document.getElementById("addGrupo"); const nome = nomeInput.value.trim(); const grupo = grupoInput.value; if (!nome) return; try { await pessoasCol.add({ nome: nome, grupo: grupo }); nomeInput.value = ''; } catch (error) { console.error("Erro ao adicionar pessoa: ", error); alert("Erro ao adicionar pessoa."); } }
-        function loadPessoasCRUD() { pessoasCol.orderBy("nome").onSnapshot(snapshot => { pessoasBody.innerHTML = ""; if (snapshot.empty) { pessoasBody.innerHTML = '<tr><td colspan="3">Nenhuma pessoa cadastrada.</td></tr>'; return; } snapshot.forEach(doc => { const pessoa = doc.data(); const id = doc.id; const row = document.createElement("tr"); row.dataset.id = id; row.innerHTML = `
+        
+        function loadPessoasCRUD() { 
+            pessoasCol.orderBy("nome").onSnapshot(snapshot => { 
+                pessoasBody.innerHTML = ""; 
+                if (snapshot.empty) { 
+                    pessoasBody.innerHTML = '<tr><td colspan="3">Nenhuma pessoa cadastrada.</td></tr>'; 
+                    return; 
+                } 
+                snapshot.forEach(doc => { 
+                    const pessoa = doc.data(); 
+                    const id = doc.id; 
+                    const row = document.createElement("tr"); 
+                    row.dataset.id = id; 
+                    
+                    // Nota: Select de Edição atualizado com Pioneiro Especial
+                    row.innerHTML = `
                         <td>
                             <span class="nome-text">${pessoa.nome}</span>
                             <input type="text" class="form-control form-control-sm nome-input" value="${pessoa.nome}">
@@ -366,6 +382,7 @@
                                 <option value="Publicador" ${pessoa.grupo === 'Publicador' ? 'selected' : ''}>Publicador</option>
                                 <option value="Pioneiro Auxiliar" ${pessoa.grupo === 'Pioneiro Auxiliar' ? 'selected' : ''}>Pioneiro Auxiliar</option>
                                 <option value="Pioneiro Regular" ${pessoa.grupo === 'Pioneiro Regular' ? 'selected' : ''}>Pioneiro Regular</option>
+                                <option value="Pioneiro Especial" ${pessoa.grupo === 'Pioneiro Especial' ? 'selected' : ''}>Pioneiro Especial</option>
                             </select>
                         </td>
                         <td>
@@ -386,24 +403,30 @@
                                 </button>
                             </div>
                         </td>
-                    `; pessoasBody.appendChild(row); }); }, error => { console.error("Erro ao carregar pessoas (snapshot): ", error); alert("Erro crítico ao carregar a lista de pessoas."); }); }
+                    `; 
+                    pessoasBody.appendChild(row); 
+                }); 
+            }, error => { 
+                console.error("Erro ao carregar pessoas (snapshot): ", error); 
+                alert("Erro crítico ao carregar a lista de pessoas."); 
+            }); 
+        }
+
         window.handleUpdateGrupo = async (id, novoGrupo) => { try { await pessoasCol.doc(id).update({ grupo: novoGrupo }); } catch (error) { console.error("Erro ao atualizar grupo: ", error); } };
         window.toggleEditNome = (button, cancel = false) => { const row = button.closest('tr'); const nomeText = row.querySelector('.nome-text'); const nomeInput = row.querySelector('.nome-input'); const defaultButtons = row.querySelector('.default-buttons'); const editButtons = row.querySelector('.edit-buttons'); if (cancel) { nomeInput.value = nomeText.textContent; } nomeText.classList.toggle('editing'); nomeInput.classList.toggle('editing'); defaultButtons.classList.toggle('editing'); editButtons.classList.toggle('editing'); };
         window.handleUpdateNome = async (button, id) => { const row = button.closest('tr'); const nomeInput = row.querySelector('.nome-input'); const novoNome = nomeInput.value.trim(); if (!novoNome) return; try { await pessoasCol.doc(id).update({ nome: novoNome }); window.toggleEditNome(button, false); } catch (error) { console.error("Erro ao atualizar nome: ", error); } };
         window.handleDeletePessoa = async (id, nome) => { if (confirm(`Tem certeza que deseja excluir ${nome}?`)) { try { await pessoasCol.doc(id).delete(); } catch (error) { console.error("Erro ao excluir pessoa: ", error); } } };
 
         // =================================================================
-        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS (Refatorada V2.7)
+        // 7. LÓGICA DE ANÁLISE DE RELATÓRIOS
         // =================================================================
 
         function resetAnalysisUI() {
-            // (Cards - Sem alteração)
             ['totalHorasAux', 'totalEstudosAux', 'totalHorasReg', 'totalEstudosReg', 'totalEstudosPub'].forEach(id => { document.getElementById(id).textContent = '0'; });
             ['countHorasAux', 'countEstudosAux', 'countHorasReg', 'countEstudosReg', 'countEstudosPub'].forEach(id => { document.getElementById(id).textContent = '0 relataram'; });
             document.getElementById('totalMeioSemana').textContent = '0'; document.getElementById('totalFimSemana').textContent = '0';
             document.getElementById('countMeioSemana').textContent = '0 reuniões'; document.getElementById('countFimSemana').textContent = '0 reuniões';
             
-            // (Colspan V2.5)
             pendentesBody.innerHTML = '<p class="text-muted">Carregando...</p>';
             reunioesBody.innerHTML = '<tr><td colspan="4" class="text-muted">Carregando...</td></tr>';
             relatoriosEnviadosBody.innerHTML = '<tr><td colspan="7" class="text-muted">Carregando...</td></tr>';
@@ -429,9 +452,6 @@
             }
         }
 
-        // =================================================================
-        // [V2.7] MODIFICADO: Relatórios de CAMPO (Ordenação Grupo/Nome)
-        // =================================================================
         async function loadFieldReports(mesReferencia) {
             relatoriosEnviadosBody.innerHTML = ''; 
             try {
@@ -445,10 +465,7 @@
                 
                 let totais = { horasAux: 0, estudosAux: 0, countAux: 0, horasReg: 0, estudosReg: 0, countReg: 0, estudosPub: 0, countPub: 0 };
                 const nomesQueEnviaram = new Set(); 
-                
-                // --- [V2.7] INÍCIO DA MUDANÇA: Coleta e Ordenação ---
                 const reportsArray = []; 
-                // ---
 
                 if (relatoriosSnapshot.empty) {
                     relatoriosEnviadosBody.innerHTML = '<tr><td colspan="7" class="text-muted">Nenhum relatório enviado para este mês.</td></tr>';
@@ -459,12 +476,13 @@
                     const id = doc.id;
                     nomesQueEnviaram.add(rel.nome);
 
-                    // Soma os totais (Lógica V2.5)
+                    // Soma os totais
                     if (rel.grupo === "Pioneiro Auxiliar") {
                         totais.horasAux += (rel.horas || 0);
                         totais.estudosAux += (rel.estudos || 0);
                         totais.countAux++;
-                    } else if (rel.grupo === "Pioneiro Regular") {
+                    } else if (rel.grupo === "Pioneiro Regular" || rel.grupo === "Pioneiro Especial") {
+                        // NOTA: Pioneiros Especiais são somados junto com os Regulares nos Cards de Totais para simplificar a visualização
                         totais.horasReg += (rel.horas || 0);
                         totais.estudosReg += (rel.estudos || 0);
                         totais.countReg++;
@@ -475,25 +493,18 @@
                         }
                     }
 
-                    // --- [V2.7] MUDANÇA: Adiciona ao array ao invés de renderizar ---
                     reportsArray.push({ id: id, ...rel });
-                    // ---
                 });
 
-                // --- [V2.7] MUDANÇA: Ordena o array (Primeiro por Grupo, depois por Nome) ---
+                // Ordenação: Grupo -> Nome
                 reportsArray.sort((a, b) => {
-                    // Ordena por Grupo
                     if (a.grupo < b.grupo) return -1;
                     if (a.grupo > b.grupo) return 1;
-                    
-                    // Se os grupos forem iguais, ordena por Nome
                     if (a.nome < b.nome) return -1;
                     if (a.nome > b.nome) return 1;
-
                     return 0;
                 });
 
-                // --- [V2.7] MUDANÇA: Renderiza o array ordenado ---
                 reportsArray.forEach(rel => {
                     const row = document.createElement('tr');
                     row.dataset.id = rel.id; 
@@ -517,9 +528,8 @@
                     `;
                     relatoriosEnviadosBody.appendChild(row);
                 });
-                // --- [V2.7] FIM DAS MUDANÇAS (CAMPO) ---
 
-                // Atualiza os cards (Sem alteração)
+                // Atualiza cards
                 document.getElementById('totalHorasAux').textContent = totais.horasAux; document.getElementById('totalEstudosAux').textContent = totais.estudosAux; document.getElementById('totalHorasReg').textContent = totais.horasReg; document.getElementById('totalEstudosReg').textContent = totais.estudosReg; document.getElementById('totalEstudosPub').textContent = totais.estudosPub;
                 document.getElementById('countHorasAux').textContent = `${totais.countAux} relataram`; document.getElementById('countEstudosAux').textContent = `${totais.countAux} relataram`; document.getElementById('countHorasReg').textContent = `${totais.countReg} relataram`; document.getElementById('countEstudosReg').textContent = `${totais.countReg} relataram`; document.getElementById('countEstudosPub').textContent = `${totais.countPub} relataram`;
                 
@@ -532,13 +542,40 @@
             }
         }
         
-        // (Renderização de Pendentes - Sem Alteração)
-        function renderPendentes(allPessoas, nomesQueEnviaram) { const pendentes = { "Publicador": [], "Pioneiro Auxiliar": [], "Pioneiro Regular": [] }; allPessoas.forEach((grupo, nome) => { if (!nomesQueEnviaram.has(nome)) { if (pendentes.hasOwnProperty(grupo)) { pendentes[grupo].push(nome); } } }); pendentesBody.innerHTML = ''; let totalPendentes = 0; const gruposParaExibir = ["Pioneiro Regular", "Pioneiro Auxiliar", "Publicador"]; gruposParaExibir.forEach(grupo => { const lista = pendentes[grupo]; if (lista.length > 0) { totalPendentes += lista.length; let html = `<h6 class="text-muted">${grupo} (${lista.length})</h6><ul class="list-group list-group-flush mb-3">`; lista.sort().forEach(nome => { html += `<li class="list-group-item py-1">${nome}</li>`; }); html += `</ul>`; pendentesBody.innerHTML += html; } }); if (totalPendentes === 0) { pendentesBody.innerHTML = '<p class="text-success">Todos enviaram o relatório!</p>'; } }
+        function renderPendentes(allPessoas, nomesQueEnviaram) { 
+            // Inicializa listas de pendentes incluindo Pioneiro Especial
+            const pendentes = { "Publicador": [], "Pioneiro Auxiliar": [], "Pioneiro Regular": [], "Pioneiro Especial": [] }; 
+            
+            allPessoas.forEach((grupo, nome) => { 
+                if (!nomesQueEnviaram.has(nome)) { 
+                    if (pendentes.hasOwnProperty(grupo)) { 
+                        pendentes[grupo].push(nome); 
+                    } 
+                } 
+            }); 
+            
+            pendentesBody.innerHTML = ''; 
+            let totalPendentes = 0; 
+            
+            // Define a ordem de exibição
+            const gruposParaExibir = ["Pioneiro Especial", "Pioneiro Regular", "Pioneiro Auxiliar", "Publicador"]; 
+            
+            gruposParaExibir.forEach(grupo => { 
+                const lista = pendentes[grupo]; 
+                if (lista && lista.length > 0) { 
+                    totalPendentes += lista.length; 
+                    let html = `<h6 class="text-muted">${grupo} (${lista.length})</h6><ul class="list-group list-group-flush mb-3">`; 
+                    lista.sort().forEach(nome => { html += `<li class="list-group-item py-1">${nome}</li>`; }); 
+                    html += `</ul>`; 
+                    pendentesBody.innerHTML += html; 
+                } 
+            }); 
+            
+            if (totalPendentes === 0) { 
+                pendentesBody.innerHTML = '<p class="text-success">Todos enviaram o relatório!</p>'; 
+            } 
+        }
 
-        
-        // =================================================================
-        // [V2.7] MODIFICADO: Relatórios de REUNIÃO (Reversão para SOMA)
-        // =================================================================
         async function loadMeetingReports(startDate, endDate) {
             reunioesBody.innerHTML = '';
             try {
@@ -579,8 +616,6 @@
                         </td>
                     `;
                     reunioesBody.appendChild(row);
-
-                    // Soma os totais
                     if (reuniao.tipo === "Meio de Semana") {
                         totalMeioSemana += reuniao.quantidade; countMeioSemana++;
                     } else if (reuniao.tipo === "Fim de Semana") {
@@ -588,16 +623,8 @@
                     }
                 });
                 
-                // --- [V2.7] INÍCIO DA MUDANÇA: Exibe SOMA (Total) ao invés de Média ---
-                // const mediaMeioSemana = (countMeioSemana > 0) ? (totalMeioSemana / countMeioSemana) : 0; // V2.6
-                // const mediaFimSemana = (countFimSemana > 0) ? (totalFimSemana / countFimSemana) : 0; // V2.6
-
-                // Atualiza os cards com a SOMA total
                 document.getElementById('totalMeioSemana').textContent = totalMeioSemana;
                 document.getElementById('totalFimSemana').textContent = totalFimSemana;
-                // --- [V2.7] FIM DA MUDANÇA ---
-                
-                // Atualiza a contagem de reuniões
                 document.getElementById('countMeioSemana').textContent = `${countMeioSemana} reuniões`;
                 document.getElementById('countFimSemana').textContent = `${countFimSemana} reuniões`;
 
@@ -607,14 +634,12 @@
             }
         }
         
-        // (Função utilitária - Sem Alterações)
         function setLoadButtonLoading(isLoading) { if (isLoading) { loadReportsButton.disabled = true; loadButtonText.style.display = 'none'; loadButtonSpinner.style.display = 'inline-block'; } else { loadReportsButton.disabled = false; loadButtonText.style.display = 'inline-block'; loadButtonSpinner.style.display = 'none'; } }
 
         // =================================================================
-        // 8. [V2.5] FUNÇÕES CRUD (Sem Alterações)
+        // 8. FUNÇÕES CRUD
         // =================================================================
 
-        // --- Funções de Exclusão ---
         window.deleteRelatorio = async (id, nome) => {
             if (!confirm(`Tem certeza que deseja excluir o relatório de ${nome}?`)) return;
             try {
@@ -636,7 +661,6 @@
             }
         };
 
-        // --- Funções de Edição (Relatório de Campo) ---
         window.openEditRelatorioModal = async (id) => {
             try {
                 const doc = await relatoriosCol.doc(id).get();
@@ -647,7 +671,9 @@
                 const rel = doc.data();
                 editModalLabel.textContent = `Editar Relatório: ${rel.nome}`;
                 let modalHtml = '';
-                if (rel.grupo === "Pioneiro Auxiliar" || rel.grupo === "Pioneiro Regular") {
+                
+                // Lógica de Modal atualizada para incluir Pioneiro Especial
+                if (rel.grupo === "Pioneiro Auxiliar" || rel.grupo === "Pioneiro Regular" || rel.grupo === "Pioneiro Especial") {
                     modalHtml = `
                         <p><strong>Grupo:</strong> ${rel.grupo}</p>
                         <div class="mb-3">
@@ -694,7 +720,7 @@
         window.saveRelatorio = async (id, grupo) => {
             try {
                 const updateData = {};
-                if (grupo === "Pioneiro Auxiliar" || grupo === "Pioneiro Regular") {
+                if (grupo === "Pioneiro Auxiliar" || grupo === "Pioneiro Regular" || grupo === "Pioneiro Especial") {
                     updateData.horas = Number(document.getElementById("modal_p_horas").value) || 0;
                     updateData.estudos = Number(document.getElementById("modal_p_estudos").value) || 0;
                     updateData.observacoes = document.getElementById("modal_p_observacoes").value || "";
@@ -717,7 +743,6 @@
             }
         };
 
-        // --- Funções de Edição (Relatório de Reunião) ---
         window.openEditReuniaoModal = async (id) => {
             try {
                 const doc = await reunioesCol.doc(id).get();
