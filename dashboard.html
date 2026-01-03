@@ -72,7 +72,7 @@
         
         <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">Painel Admin V2.8</a>
+                <a class="navbar-brand" href="#">Painel Admin V2.9</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -146,8 +146,13 @@
                                             <div class="row">
                                                 <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Horas (Auxiliares)</h6><p class="display-6 text-primary" id="totalHorasAux">0</p><small id="countHorasAux">0 relataram</small></div></div></div>
                                                 <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Auxiliares)</h6><p class="display-6 text-primary" id="totalEstudosAux">0</p><small id="countEstudosAux">0 relataram</small></div></div></div>
-                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Horas (Reg./Esp.)</h6><p class="display-6 text-primary" id="totalHorasReg">0</p><small id="countHorasReg">0 relataram</small></div></div></div>
-                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Reg./Esp.)</h6><p class="display-6 text-primary" id="totalEstudosReg">0</p><small id="countEstudosReg">0 relataram</small></div></div></div>
+                                                
+                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Horas (Regulares)</h6><p class="display-6 text-primary" id="totalHorasReg">0</p><small id="countHorasReg">0 relataram</small></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Regulares)</h6><p class="display-6 text-primary" id="totalEstudosReg">0</p><small id="countEstudosReg">0 relataram</small></div></div></div>
+
+                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Horas (Especiais)</h6><p class="display-6 text-primary" id="totalHorasEsp">0</p><small id="countHorasEsp">0 relataram</small></div></div></div>
+                                                <div class="col-md-6 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Especiais)</h6><p class="display-6 text-primary" id="totalEstudosEsp">0</p><small id="countEstudosEsp">0 relataram</small></div></div></div>
+
                                                 <div class="col-12 mb-3"><div class="card card-total h-100"><div class="card-body"><h6 class="card-title text-muted">Estudos (Publicadores)</h6><p class="display-6 text-primary" id="totalEstudosPub">0</p><small id="countEstudosPub">0 relataram</small></div></div></div>
                                             </div>
                                             <h6 class="text-muted mt-3">Pendentes de Relatório</h6>
@@ -276,7 +281,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        // [PRODUÇÃO V2.8] (Inclui suporte a Pioneiro Especial)
+        // [PRODUÇÃO V2.9] (Separação Total de Pioneiros Especiais)
 
         // --- 1. Configuração do Firebase ---
         const firebaseConfig = {
@@ -370,8 +375,6 @@
                     const id = doc.id; 
                     const row = document.createElement("tr"); 
                     row.dataset.id = id; 
-                    
-                    // Nota: Select de Edição atualizado com Pioneiro Especial
                     row.innerHTML = `
                         <td>
                             <span class="nome-text">${pessoa.nome}</span>
@@ -422,8 +425,9 @@
         // =================================================================
 
         function resetAnalysisUI() {
-            ['totalHorasAux', 'totalEstudosAux', 'totalHorasReg', 'totalEstudosReg', 'totalEstudosPub'].forEach(id => { document.getElementById(id).textContent = '0'; });
-            ['countHorasAux', 'countEstudosAux', 'countHorasReg', 'countEstudosReg', 'countEstudosPub'].forEach(id => { document.getElementById(id).textContent = '0 relataram'; });
+            // Zera todos os contadores, incluindo os novos (Esp)
+            ['totalHorasAux', 'totalEstudosAux', 'totalHorasReg', 'totalEstudosReg', 'totalHorasEsp', 'totalEstudosEsp', 'totalEstudosPub'].forEach(id => { document.getElementById(id).textContent = '0'; });
+            ['countHorasAux', 'countEstudosAux', 'countHorasReg', 'countEstudosReg', 'countHorasEsp', 'countEstudosEsp', 'countEstudosPub'].forEach(id => { document.getElementById(id).textContent = '0 relataram'; });
             document.getElementById('totalMeioSemana').textContent = '0'; document.getElementById('totalFimSemana').textContent = '0';
             document.getElementById('countMeioSemana').textContent = '0 reuniões'; document.getElementById('countFimSemana').textContent = '0 reuniões';
             
@@ -463,7 +467,14 @@
 
                 const relatoriosSnapshot = await relatoriosCol.where("mesReferencia", "==", mesReferencia).get();
                 
-                let totais = { horasAux: 0, estudosAux: 0, countAux: 0, horasReg: 0, estudosReg: 0, countReg: 0, estudosPub: 0, countPub: 0 };
+                // Totais inicializados (Separados V2.9)
+                let totais = { 
+                    horasAux: 0, estudosAux: 0, countAux: 0, 
+                    horasReg: 0, estudosReg: 0, countReg: 0, 
+                    horasEsp: 0, estudosEsp: 0, countEsp: 0,
+                    estudosPub: 0, countPub: 0 
+                };
+
                 const nomesQueEnviaram = new Set(); 
                 const reportsArray = []; 
 
@@ -476,16 +487,20 @@
                     const id = doc.id;
                     nomesQueEnviaram.add(rel.nome);
 
-                    // Soma os totais
+                    // Soma os totais (Lógica Separada V2.9)
                     if (rel.grupo === "Pioneiro Auxiliar") {
                         totais.horasAux += (rel.horas || 0);
                         totais.estudosAux += (rel.estudos || 0);
                         totais.countAux++;
-                    } else if (rel.grupo === "Pioneiro Regular" || rel.grupo === "Pioneiro Especial") {
-                        // NOTA: Pioneiros Especiais são somados junto com os Regulares nos Cards de Totais para simplificar a visualização
+                    } else if (rel.grupo === "Pioneiro Regular") {
                         totais.horasReg += (rel.horas || 0);
                         totais.estudosReg += (rel.estudos || 0);
                         totais.countReg++;
+                    } else if (rel.grupo === "Pioneiro Especial") {
+                        // Novo bloco exclusivo para Especiais
+                        totais.horasEsp += (rel.horas || 0);
+                        totais.estudosEsp += (rel.estudos || 0);
+                        totais.countEsp++;
                     } else if (rel.grupo === "Publicador") {
                         totais.estudosPub += (rel.estudos || 0);
                         if (rel.participou === "Sim" || (rel.estudos || 0) > 0) {
@@ -529,9 +544,24 @@
                     relatoriosEnviadosBody.appendChild(row);
                 });
 
-                // Atualiza cards
-                document.getElementById('totalHorasAux').textContent = totais.horasAux; document.getElementById('totalEstudosAux').textContent = totais.estudosAux; document.getElementById('totalHorasReg').textContent = totais.horasReg; document.getElementById('totalEstudosReg').textContent = totais.estudosReg; document.getElementById('totalEstudosPub').textContent = totais.estudosPub;
-                document.getElementById('countHorasAux').textContent = `${totais.countAux} relataram`; document.getElementById('countEstudosAux').textContent = `${totais.countAux} relataram`; document.getElementById('countHorasReg').textContent = `${totais.countReg} relataram`; document.getElementById('countEstudosReg').textContent = `${totais.countReg} relataram`; document.getElementById('countEstudosPub').textContent = `${totais.countPub} relataram`;
+                // Atualiza cards (Incluindo os novos V2.9)
+                document.getElementById('totalHorasAux').textContent = totais.horasAux; 
+                document.getElementById('totalEstudosAux').textContent = totais.estudosAux; 
+                document.getElementById('countHorasAux').textContent = `${totais.countAux} relataram`; 
+                document.getElementById('countEstudosAux').textContent = `${totais.countAux} relataram`; 
+
+                document.getElementById('totalHorasReg').textContent = totais.horasReg; 
+                document.getElementById('totalEstudosReg').textContent = totais.estudosReg; 
+                document.getElementById('countHorasReg').textContent = `${totais.countReg} relataram`; 
+                document.getElementById('countEstudosReg').textContent = `${totais.countReg} relataram`; 
+
+                document.getElementById('totalHorasEsp').textContent = totais.horasEsp; 
+                document.getElementById('totalEstudosEsp').textContent = totais.estudosEsp; 
+                document.getElementById('countHorasEsp').textContent = `${totais.countEsp} relataram`; 
+                document.getElementById('countEstudosEsp').textContent = `${totais.countEsp} relataram`; 
+
+                document.getElementById('totalEstudosPub').textContent = totais.estudosPub;
+                document.getElementById('countEstudosPub').textContent = `${totais.countPub} relataram`;
                 
                 renderPendentes(allPessoas, nomesQueEnviaram);
 
@@ -543,7 +573,6 @@
         }
         
         function renderPendentes(allPessoas, nomesQueEnviaram) { 
-            // Inicializa listas de pendentes incluindo Pioneiro Especial
             const pendentes = { "Publicador": [], "Pioneiro Auxiliar": [], "Pioneiro Regular": [], "Pioneiro Especial": [] }; 
             
             allPessoas.forEach((grupo, nome) => { 
@@ -557,7 +586,6 @@
             pendentesBody.innerHTML = ''; 
             let totalPendentes = 0; 
             
-            // Define a ordem de exibição
             const gruposParaExibir = ["Pioneiro Especial", "Pioneiro Regular", "Pioneiro Auxiliar", "Publicador"]; 
             
             gruposParaExibir.forEach(grupo => { 
@@ -672,7 +700,7 @@
                 editModalLabel.textContent = `Editar Relatório: ${rel.nome}`;
                 let modalHtml = '';
                 
-                // Lógica de Modal atualizada para incluir Pioneiro Especial
+                // Modal atualizado V2.9 (Sem alteração visual, mas lógica consistente)
                 if (rel.grupo === "Pioneiro Auxiliar" || rel.grupo === "Pioneiro Regular" || rel.grupo === "Pioneiro Especial") {
                     modalHtml = `
                         <p><strong>Grupo:</strong> ${rel.grupo}</p>
