@@ -43,7 +43,7 @@
                 <label for="selectNome" class="form-label fs-5">Seu Nome:</label>
                 <select id="selectNome" class="form-select form-select-lg" required>
                     <option value="" data-grupo="">Selecione seu nome...</option>
-                    </select>
+                </select>
             </div>
 
             <div class="mb-3">
@@ -124,7 +124,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <script>
-        // [PRODUÇÃO V2.5] (Inclui suporte a Pioneiro Especial)
+        // [PRODUÇÃO V2.6 - INTEGRAÇÃO TERRITÓRIOS]
         
         // --- 1. Configuração do Firebase ---
         const firebaseConfig = {
@@ -206,7 +206,6 @@
             camposPublicador.style.display = "none";
             campoQuantasPessoas.style.display = "none"; 
             
-            // Alteração V2.5: Inclusão de Pioneiro Especial
             if (grupo === "Pioneiro Auxiliar" || grupo === "Pioneiro Regular" || grupo === "Pioneiro Especial") {
                 camposPioneiro.style.display = "block";
             } else if (grupo === "Publicador") {
@@ -252,7 +251,6 @@
             };
 
             try {
-                // Alteração V2.5: Inclusão de Pioneiro Especial na validação de dados
                 if (grupo === "Pioneiro Auxiliar" || grupo === "Pioneiro Regular" || grupo === "Pioneiro Especial") {
                     relatorio.horas = Number(document.getElementById("p_horas").value) || 0;
                     relatorio.estudos = Number(document.getElementById("p_estudos").value) || 0;
@@ -267,9 +265,20 @@
                 
                 formSuccess.textContent = "Relatório enviado com sucesso! Obrigado.";
                 formSuccess.style.display = "block";
-                form.reset(); 
-                handleGroupChange(); 
-                selectNome.selectedIndex = 0; 
+                
+                // Se o usuário veio por URL, ele não precisa voltar para a lista de nomes vazia.
+                // Mas limpamos os campos numéricos por segurança visual.
+                const isIntegrated = new URLSearchParams(window.location.search).has('nome');
+                if(!isIntegrated) {
+                    form.reset(); 
+                    handleGroupChange(); 
+                    selectNome.selectedIndex = 0; 
+                } else {
+                    document.getElementById("p_horas").value = "";
+                    document.getElementById("p_estudos").value = "";
+                    document.getElementById("pub_estudos").value = "";
+                    document.getElementById("p_observacoes").value = "";
+                }
 
             } catch (error) {
                 console.error("Erro ao enviar relatório: ", error);
@@ -292,10 +301,74 @@
             }
         }
 
+        // --- MÓDULO DE INTEGRAÇÃO (O RECEPTOR) ---
+        function applyIntegration(nome, grupo, horas, estudos, participou) {
+            // 1. Transmutação da Interface: Esconder o select original
+            selectNome.style.display = 'none';
+            document.querySelector('label[for="selectNome"]').style.display = 'none';
+
+            // 2. Criar elemento de texto fixo para o nome (Segurança)
+            const nomeContainer = document.createElement('div');
+            nomeContainer.className = 'alert alert-secondary fs-5 mb-3';
+            nomeContainer.innerHTML = `<i class="bi bi-person-check-fill text-success"></i> <strong>Publicador:</strong> ${nome} <br><small class="text-muted"><i class="bi bi-tag-fill"></i> Grupo: ${grupo}</small>`;
+            selectNome.parentNode.insertBefore(nomeContainer, selectNome);
+
+            // 3. Manter a lógica do sistema intacta: Injetar a opção oculta
+            const option = document.createElement("option");
+            option.value = nome;
+            option.textContent = nome;
+            option.dataset.grupo = grupo;
+            selectNome.appendChild(option);
+            selectNome.selectedIndex = 1; // Seleciona a opção injetada para enganar o submit original
+
+            // 4. Habilitar o botão de envio
+            submitButton.disabled = false;
+            submitButtonText.textContent = "Enviar Relatório";
+
+            // 5. Disparar a exibição do formulário correto
+            handleGroupChange();
+
+            // 6. Preenchimento Automático (Sem readonly/disabled, permitindo edição)
+            if (grupo === "Pioneiro Auxiliar" || grupo === "Pioneiro Regular" || grupo === "Pioneiro Especial") {
+                if (horas) document.getElementById("p_horas").value = horas;
+                if (estudos) document.getElementById("p_estudos").value = estudos;
+            } else if (grupo === "Publicador") {
+                if (participou === "Sim") {
+                    document.getElementById("participouSim").checked = true;
+                } else if (participou === "Não") {
+                    document.getElementById("participouNao").checked = true;
+                }
+                
+                if (estudos && Number(estudos) > 0) {
+                    document.getElementById("visitaSim").checked = true;
+                    document.getElementById("campoQuantasPessoas").style.display = "block";
+                    document.getElementById("pub_estudos").value = estudos;
+                }
+            }
+        }
+
         // --- 6. Inicialização ---
         document.addEventListener("DOMContentLoaded", () => {
             mesReferenciaInput.value = getMesReferencia();
-            loadPessoas();
+            
+            // Lógica do Leitor de URL (A Integração)
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlNome = urlParams.get('nome');
+            const urlGrupo = urlParams.get('grupo');
+
+            // Lógica Defensiva (Mitigação do Risco 3)
+            if (urlNome && urlGrupo) {
+                // Cenário A: Usuário Integrado (Vem do sistema de Territórios)
+                const urlHoras = urlParams.get('horas');
+                const urlEstudos = urlParams.get('estudos');
+                const urlParticipou = urlParams.get('participou');
+                
+                applyIntegration(urlNome, urlGrupo, urlHoras, urlEstudos, urlParticipou);
+            } else {
+                // Cenário B: Usuário Avulso (Link direto normal)
+                loadPessoas();
+            }
+
             selectNome.addEventListener("change", handleGroupChange);
             form.addEventListener("submit", handleFormSubmit);
         });
