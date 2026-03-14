@@ -310,7 +310,8 @@
             // 2. Criar elemento de texto fixo para o nome (Segurança)
             const nomeContainer = document.createElement('div');
             nomeContainer.className = 'alert alert-secondary fs-5 mb-3';
-            nomeContainer.innerHTML = `<i class="bi bi-person-check-fill text-success"></i> <strong>Publicador:</strong> ${nome} <br><small class="text-muted"><i class="bi bi-tag-fill"></i> Grupo: ${grupo}</small>`;
+            // Trocado "Publicador" por "Nome" para evitar redundância com o Grupo
+            nomeContainer.innerHTML = `<i class="bi bi-person-check-fill text-success"></i> <strong>Nome:</strong> ${nome} <br><small class="text-muted"><i class="bi bi-tag-fill"></i> Grupo: ${grupo}</small>`;
             selectNome.parentNode.insertBefore(nomeContainer, selectNome);
 
             // 3. Manter a lógica do sistema intacta: Injetar a opção oculta
