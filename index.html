@@ -348,25 +348,44 @@
             }
         }
 
-        // --- 6. Inicialização ---
-        document.addEventListener("DOMContentLoaded", () => {
+        // --- 6. Inicialização e Guardião da Porta ---
+        document.addEventListener("DOMContentLoaded", async () => {
             mesReferenciaInput.value = getMesReferencia();
             
-            // Lógica do Leitor de URL (A Integração)
             const urlParams = new URLSearchParams(window.location.search);
             const urlNome = urlParams.get('nome');
-            const urlGrupo = urlParams.get('grupo');
+            const urlGrupoTentativa = urlParams.get('grupo'); // O que a URL "diz" que o irmão é
+            const urlHoras = urlParams.get('horas');
+            const urlEstudos = urlParams.get('estudos');
+            const urlParticipou = urlParams.get('participou');
 
-            // Lógica Defensiva (Mitigação do Risco 3)
-            if (urlNome && urlGrupo) {
-                // Cenário A: Usuário Integrado (Vem do sistema de Territórios)
-                const urlHoras = urlParams.get('horas');
-                const urlEstudos = urlParams.get('estudos');
-                const urlParticipou = urlParams.get('participou');
-                
-                applyIntegration(urlNome, urlGrupo, urlHoras, urlEstudos, urlParticipou);
+            if (urlNome) {
+                // MODO GUARDIÃO: Não confia na URL, valida no banco de dados!
+                submitButtonText.textContent = "Verificando credenciais...";
+                submitButton.disabled = true;
+
+                try {
+                    // Busca o irmão exato no banco de dados oficial de relatórios
+                    const snapshot = await pessoasCol.where("nome", "==", urlNome).limit(1).get();
+                    
+                    if (!snapshot.empty) {
+                        const dadosBanco = snapshot.docs[0].data();
+                        const grupoRealDoBanco = dadosBanco.grupo; // A FONTE DA VERDADE
+
+                        // A mágica acontece aqui: ignoramos o 'urlGrupoTentativa' e usamos o 'grupoRealDoBanco'.
+                        // Se a URL diz "Pioneiro" mas o banco diz "Publicador", o banco vence e as horas são ignoradas.
+                        applyIntegration(urlNome, grupoRealDoBanco, urlHoras, urlEstudos, urlParticipou);
+                    } else {
+                        // Se o nome da URL não existir no banco, aborta a integração e carrega a lista normal
+                        console.warn("Nome não encontrado no banco oficial. Carregando modo manual.");
+                        loadPessoas();
+                    }
+                } catch (error) {
+                    console.error("Erro na verificação de segurança:", error);
+                    loadPessoas(); // Fallback de segurança para não travar a tela
+                }
             } else {
-                // Cenário B: Usuário Avulso (Link direto normal)
+                // Cenário B: Usuário Avulso (Link direto normal sem integração)
                 loadPessoas();
             }
 
