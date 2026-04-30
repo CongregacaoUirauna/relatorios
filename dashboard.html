@@ -102,6 +102,12 @@
                         <i class="bi bi-people-fill"></i> Gerenciar Pessoas
                     </button>
                 </li>
+                <!-- NOVA ABA DE NAVEGAÇÃO -->
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="task-cards-tab" data-bs-toggle="tab" data-bs-target="#task-cards-pane" type="button" role="tab" aria-controls="task-cards-pane" aria-selected="false">
+                        <i class="bi bi-person-vcard"></i> Cartões de Publicador
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content" id="mainTasksTabContent">
@@ -252,6 +258,106 @@
                         </div>
                     </div> 
                 </div> 
+
+                <!-- NOVA ABA: CORPO DO CARTÃO DE PUBLICADOR -->
+                <div class="tab-pane fade" id="task-cards-pane" role="tabpanel" aria-labelledby="task-cards-tab" tabindex="0">
+                    <div class="card p-3 p-md-4 border-0 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                            <h4><i class="bi bi-person-vcard"></i> Registro de Publicador de Congregação</h4>
+                        </div>
+                        
+                        <!-- Controles de Seleção (Pessoa e Ano de Serviço) -->
+                        <div class="row g-3 mb-4 p-3 bg-light border rounded">
+                            <div class="col-md-6">
+                                <label for="selectCartaoPessoa" class="form-label">Selecione o Publicador</label>
+                                <select id="selectCartaoPessoa" class="form-select">
+                                    <option value="" selected disabled>Escolha um publicador...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="selectCartaoAno" class="form-label">Ano de Serviço</label>
+                                <select id="selectCartaoAno" class="form-select"></select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button id="btnLoadCartao" class="btn btn-primary w-100">Carregar Cartão</button>
+                            </div>
+                        </div>
+
+                        <!-- Ficha de Dados Pessoais e Teocráticos -->
+                        <div id="cartaoContainer" style="display: none;">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small mb-0">Data de nascimento</label>
+                                    <input type="date" id="cartaoNascimento" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small mb-0">Gênero</label>
+                                    <select id="cartaoGenero" class="form-select form-select-sm">
+                                        <option value="">Selecione...</option>
+                                        <option value="Masculino">Masculino</option>
+                                        <option value="Feminino">Feminino</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small mb-0">Data de batismo</label>
+                                    <input type="date" id="cartaoBatismo" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-muted small mb-0">Esperança</label>
+                                    <select id="cartaoEsperanca" class="form-select form-select-sm">
+                                        <option value="">Selecione...</option>
+                                        <option value="Outras ovelhas">Outras ovelhas</option>
+                                        <option value="Ungido">Ungido</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label text-muted small mb-0">Designações (Marque as aplicáveis)</label>
+                                    <div class="d-flex gap-3 mt-1 flex-wrap">
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" id="chkAnciao"><label class="form-check-label" for="chkAnciao">Ancião</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" id="chkServo"><label class="form-check-label" for="chkServo">Servo ministerial</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" id="chkPioReg"><label class="form-check-label" for="chkPioReg">Pioneiro regular</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" id="chkPioEsp"><label class="form-check-label" for="chkPioEsp">Pioneiro especial</label></div>
+                                        <div class="form-check"><input class="form-check-input" type="checkbox" id="chkMiss"><label class="form-check-label" for="chkMiss">Missionário em campo</label></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 text-end mt-3">
+                                    <button id="btnSaveDadosPessoais" class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-save"></i> Atualizar Dados Pessoais
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Tabela Dinâmica do Ano de Serviço -->
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered align-middle text-center table-reports">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Mês</th>
+                                            <th style="width: 15%">Participou no<br>ministério</th>
+                                            <th style="width: 15%">Estudos<br>bíblicos</th>
+                                            <th style="width: 15%">Pioneiro<br>auxiliar</th>
+                                            <th style="width: 15%">Horas<br><small class="text-muted fw-normal">(Se Pio/Miss)</small></th>
+                                            <th style="width: 25%">Observações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cartaoTabelaMeses">
+                                        <!-- O JavaScript injetará as linhas de Setembro a Agosto aqui -->
+                                    </tbody>
+                                    <tfoot class="table-light fw-bold">
+                                        <tr>
+                                            <td class="text-end">Total do Ano:</td>
+                                            <td id="totCartaoPart">-</td>
+                                            <td id="totCartaoEst">0</td>
+                                            <td id="totCartaoAux">-</td>
+                                            <td id="totCartaoHoras">0</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </div> 
         </main>
