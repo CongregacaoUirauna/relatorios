@@ -432,6 +432,13 @@
         const editModalLabel = document.getElementById('editModalLabel');
         const editModalBody = document.getElementById('editModalBody');
         const editModalSaveButton = document.getElementById('editModalSaveButton');
+        
+        // Elementos do Cartão de Publicador
+        const selectCartaoPessoa = document.getElementById('selectCartaoPessoa');
+        const selectCartaoAno = document.getElementById('selectCartaoAno');
+        const btnLoadCartao = document.getElementById('btnLoadCartao');
+        const cartaoContainer = document.getElementById('cartaoContainer');
+        const btnSaveDadosPessoais = document.getElementById('btnSaveDadosPessoais');
 
         // =================================================================
         // 4. LÓGICA DE AUTENTICAÇÃO
@@ -459,6 +466,7 @@
             populateDateSelectors();
             loadPessoasCRUD();
             loadAllReports(); 
+            initCartaoSelectors(); // INICIA A LÓGICA DO CARTÃO
             addPessoaForm.addEventListener("submit", handleAddPessoa);
             loadReportsButton.addEventListener("click", loadAllReports);
         }
@@ -945,6 +953,200 @@
                 alert("Falha ao salvar. Tente novamente.");
             }
         };
+
+        // =================================================================
+        // 9. LÓGICA DO CARTÃO DE PUBLICADOR (S-21)
+        // =================================================================
+
+        function initCartaoSelectors() {
+            // 1. Popula Anos de Serviço (Ex: 2024/2025)
+            const anoAtual = new Date().getFullYear();
+            const mesAtual = new Date().getMonth(); // 0 a 11
+            const baseAno = mesAtual >= 8 ? anoAtual : anoAtual - 1; // Se Setembro ou mais, já é o ano de serviço atual
+            
+            for (let i = baseAno + 1; i >= baseAno - 3; i--) {
+                const opt = document.createElement("option");
+                opt.value = `${i}/${i+1}`;
+                opt.textContent = `${i}/${i+1}`;
+                if (i === baseAno) opt.selected = true;
+                selectCartaoAno.appendChild(opt);
+            }
+
+            // 2. Popula a lista de irmãos do sistema
+            pessoasCol.orderBy("nome").onSnapshot(snapshot => {
+                const valorAtual = selectCartaoPessoa.value;
+                selectCartaoPessoa.innerHTML = '<option value="" selected disabled>Escolha um publicador...</option>';
+                snapshot.forEach(doc => {
+                    const opt = document.createElement("option");
+                    opt.value = doc.id;
+                    opt.dataset.nome = doc.data().nome;
+                    opt.textContent = doc.data().nome;
+                    selectCartaoPessoa.appendChild(opt);
+                });
+                if (valorAtual) selectCartaoPessoa.value = valorAtual;
+            });
+
+            btnLoadCartao.addEventListener("click", loadCartaoData);
+            btnSaveDadosPessoais.addEventListener("click", saveDadosPessoaisCartao);
+        }
+
+        async function loadCartaoData() {
+            const pessoaId = selectCartaoPessoa.value;
+            const anoServico = selectCartaoAno.value; // "2024/2025"
+            
+            if (!pessoaId) {
+                alert("Por favor, selecione um publicador.");
+                return;
+            }
+
+            const nomePessoa = selectCartaoPessoa.options[selectCartaoPessoa.selectedIndex].dataset.nome;
+            const btnOriginalText = btnLoadCartao.innerHTML;
+            btnLoadCartao.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            btnLoadCartao.disabled = true;
+
+            try {
+                // Puxa os dados pessoais da coleção 'pessoas'
+                const pessoaDoc = await pessoasCol.doc(pessoaId).get();
+                const pData = pessoaDoc.data();
+
+                // Preenche os campos do topo do cartão
+                document.getElementById('cartaoNascimento').value = pData.dataNascimento || '';
+                document.getElementById('cartaoGenero').value = pData.genero || '';
+                document.getElementById('cartaoBatismo').value = pData.dataBatismo || '';
+                document.getElementById('cartaoEsperanca').value = pData.esperanca || '';
+                document.getElementById('chkAnciao').checked = !!pData.isAnciao;
+                document.getElementById('chkServo').checked = !!pData.isServo;
+                document.getElementById('chkPioReg').checked = !!pData.isPioReg;
+                document.getElementById('chkPioEsp').checked = !!pData.isPioEsp;
+                document.getElementById('chkMiss').checked = !!pData.isMiss;
+
+                cartaoContainer.style.display = 'block';
+
+                // Gera a tabela do Ano de Serviço cruzando com a coleção de relatorios
+                await buildCartaoTable(nomePessoa, anoServico);
+
+            } catch (error) {
+                console.error("Erro ao carregar cartão:", error);
+                alert("Falha ao carregar os dados do cartão.");
+            } finally {
+                btnLoadCartao.innerHTML = btnOriginalText;
+                btnLoadCartao.disabled = false;
+            }
+        }
+
+        async function saveDadosPessoaisCartao() {
+            const pessoaId = selectCartaoPessoa.value;
+            if (!pessoaId) return;
+
+            const updateData = {
+                dataNascimento: document.getElementById('cartaoNascimento').value,
+                genero: document.getElementById('cartaoGenero').value,
+                dataBatismo: document.getElementById('cartaoBatismo').value,
+                esperanca: document.getElementById('cartaoEsperanca').value,
+                isAnciao: document.getElementById('chkAnciao').checked,
+                isServo: document.getElementById('chkServo').checked,
+                isPioReg: document.getElementById('chkPioReg').checked,
+                isPioEsp: document.getElementById('chkPioEsp').checked,
+                isMiss: document.getElementById('chkMiss').checked
+            };
+
+            const btnOriginal = btnSaveDadosPessoais.innerHTML;
+            btnSaveDadosPessoais.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
+            btnSaveDadosPessoais.disabled = true;
+
+            try {
+                await pessoasCol.doc(pessoaId).update(updateData);
+                btnSaveDadosPessoais.innerHTML = '<i class="bi bi-check-circle"></i> Salvo com Sucesso!';
+                btnSaveDadosPessoais.classList.replace('btn-outline-success', 'btn-success');
+                setTimeout(() => {
+                    btnSaveDadosPessoais.innerHTML = '<i class="bi bi-save"></i> Atualizar Dados Pessoais';
+                    btnSaveDadosPessoais.classList.replace('btn-success', 'btn-outline-success');
+                    btnSaveDadosPessoais.disabled = false;
+                }, 2000);
+            } catch (error) {
+                console.error("Erro ao salvar dados pessoais:", error);
+                alert("Falha ao salvar dados.");
+                btnSaveDadosPessoais.innerHTML = btnOriginal;
+                btnSaveDadosPessoais.disabled = false;
+            }
+        }
+
+        async function buildCartaoTable(nomePessoa, anoServico) {
+            const [anoInicio, anoFim] = anoServico.split('/'); // Ex: "2024" e "2025"
+            
+            // Array com a estrutura do Ano de Serviço (Setembro a Agosto)
+            const estruturaMeses = [
+                { mesString: "Setembro", ano: anoInicio },
+                { mesString: "Outubro", ano: anoInicio },
+                { mesString: "Novembro", ano: anoInicio },
+                { mesString: "Dezembro", ano: anoInicio },
+                { mesString: "Janeiro", ano: anoFim },
+                { mesString: "Fevereiro", ano: anoFim },
+                { mesString: "Março", ano: anoFim },
+                { mesString: "Abril", ano: anoFim },
+                { mesString: "Maio", ano: anoFim },
+                { mesString: "Junho", ano: anoFim },
+                { mesString: "Julho", ano: anoFim },
+                { mesString: "Agosto", ano: anoFim }
+            ];
+
+            // Puxa todos os relatórios DESSE IRMÃO para filtrar em memória
+            const relatoriosSnapshot = await relatoriosCol.where("nome", "==", nomePessoa).get();
+            const relatoriosIrmao = [];
+            relatoriosSnapshot.forEach(doc => relatoriosIrmao.push(doc.data()));
+
+            const tbody = document.getElementById('cartaoTabelaMeses');
+            tbody.innerHTML = '';
+            
+            let totEstudos = 0;
+            let totHoras = 0;
+
+            estruturaMeses.forEach(linha => {
+                const mesReferenciaAlvo = `${linha.mesString}/${linha.ano}`; // Ex: "Setembro/2024"
+                
+                // Procura se o irmão enviou relatório neste exato mês/ano
+                const relEncontrado = relatoriosIrmao.find(r => r.mesReferencia === mesReferenciaAlvo);
+                
+                let checkParticipou = '';
+                let estudos = '';
+                let checkAuxiliar = '';
+                let horas = '';
+                let observacoes = '';
+
+                if (relEncontrado) {
+                    if (relEncontrado.participou === "Sim" || (relEncontrado.horas > 0) || (relEncontrado.estudos > 0)) {
+                        checkParticipou = '<i class="bi bi-check-lg text-success fs-5"></i>';
+                    }
+                    if (relEncontrado.estudos > 0) {
+                        estudos = relEncontrado.estudos;
+                        totEstudos += Number(relEncontrado.estudos);
+                    }
+                    if (relEncontrado.grupo === "Pioneiro Auxiliar") {
+                        checkAuxiliar = '<i class="bi bi-check-lg text-primary fs-5"></i>';
+                    }
+                    if (relEncontrado.horas > 0 && (relEncontrado.grupo.includes("Pioneiro") || relEncontrado.grupo === "Missionário")) {
+                        horas = relEncontrado.horas;
+                        totHoras += Number(relEncontrado.horas);
+                    }
+                    observacoes = relEncontrado.observacoes || '';
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-start">${linha.mesString}</td>
+                    <td>${checkParticipou}</td>
+                    <td>${estudos}</td>
+                    <td>${checkAuxiliar}</td>
+                    <td>${horas}</td>
+                    <td class="text-start small text-muted text-truncate" style="max-width: 150px;" title="${observacoes}">${observacoes}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Atualiza rodapé
+            document.getElementById('totCartaoEst').textContent = totEstudos;
+            document.getElementById('totCartaoHoras').textContent = totHoras;
+        }
 
     </script>
 </body>
