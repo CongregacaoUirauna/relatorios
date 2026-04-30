@@ -108,6 +108,12 @@
                         <i class="bi bi-person-vcard"></i> Cartões de Publicador
                     </button>
                 </li>
+                <!-- NOVA ABA: VISITA DO VIAJANTE -->
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="task-visita-tab" data-bs-toggle="tab" data-bs-target="#task-visita-pane" type="button" role="tab" aria-controls="task-visita-pane" aria-selected="false">
+                        <i class="bi bi-briefcase-fill"></i> Visita do Viajante
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content" id="mainTasksTabContent">
@@ -318,6 +324,7 @@
                                         <div class="form-check"><input class="form-check-input" type="checkbox" id="chkPioReg"><label class="form-check-label" for="chkPioReg">Pioneiro regular</label></div>
                                         <div class="form-check"><input class="form-check-input" type="checkbox" id="chkPioEsp"><label class="form-check-label" for="chkPioEsp">Pioneiro especial</label></div>
                                         <div class="form-check"><input class="form-check-input" type="checkbox" id="chkMiss"><label class="form-check-label" for="chkMiss">Missionário em campo</label></div>
+                                        <div class="form-check border-start ps-3 ms-2"><input class="form-check-input" type="checkbox" id="chkEsposa"><label class="form-check-label text-primary" for="chkEsposa">Esposa de Ancião/Servo</label></div>
                                     </div>
                                 </div>
                                 <div class="col-12 text-end mt-3">
@@ -355,6 +362,42 @@
                                     </tfoot>
                                 </table>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOVA ABA: CORPO DA VISITA DO VIAJANTE -->
+                <div class="tab-pane fade" id="task-visita-pane" role="tabpanel" aria-labelledby="task-visita-tab" tabindex="0">
+                    <div class="card p-3 p-md-4 border-0 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                            <h4><i class="bi bi-briefcase-fill"></i> Central de Exportação - Visita do Viajante</h4>
+                        </div>
+                        <p class="text-muted">Configure o período que será analisado para a geração dos documentos.</p>
+                        
+                        <!-- Seletor de Período Manual -->
+                        <div class="row g-3 mb-4 p-3 bg-light border rounded">
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold">Ano de Serviço Base</label>
+                                <select id="selectVisitaAno" class="form-select"></select>
+                            </div>
+                        </div>
+
+                        <!-- Painel de Botões de Exportação -->
+                        <div class="row g-3">
+                            <h6 class="border-bottom pb-1 mt-4">1. Exportação de Cartões Individuais (.zip)</h6>
+                            <div class="col-md-6"><button class="btn btn-outline-primary w-100 text-start" id="btnExpTodosPubs"><i class="bi bi-file-earmark-pdf"></i> Todos os Publicadores</button></div>
+                            <div class="col-md-6"><button class="btn btn-outline-primary w-100 text-start" id="btnExpPioReg"><i class="bi bi-file-earmark-pdf"></i> Pioneiros Regulares</button></div>
+                            <div class="col-md-6"><button class="btn btn-outline-primary w-100 text-start" id="btnExpPioEsp"><i class="bi bi-file-earmark-pdf"></i> Pioneiros Especiais</button></div>
+                            <div class="col-md-6"><button class="btn btn-outline-primary w-100 text-start" id="btnExpLideranca"><i class="bi bi-file-earmark-pdf"></i> Anciãos, Servos e Esposas</button></div>
+
+                            <h6 class="border-bottom pb-1 mt-4">2. Totais por Grupo (.zip com os Cartões de Total)</h6>
+                            <div class="col-md-6"><button class="btn btn-outline-success w-100 text-start" id="btnTotPub"><i class="bi bi-calculator"></i> Totais dos Publicadores</button></div>
+                            <div class="col-md-6"><button class="btn btn-outline-success w-100 text-start" id="btnTotAux"><i class="bi bi-calculator"></i> Totais dos Pioneiros Auxiliares</button></div>
+                            <div class="col-md-6"><button class="btn btn-outline-success w-100 text-start" id="btnTotReg"><i class="bi bi-calculator"></i> Totais dos Pioneiros Regulares</button></div>
+                            <div class="col-md-6"><button class="btn btn-outline-success w-100 text-start" id="btnTotEsp"><i class="bi bi-calculator"></i> Totais dos Pioneiros Especiais</button></div>
+
+                            <h6 class="border-bottom pb-1 mt-4">3. Assistência às Reuniões</h6>
+                            <div class="col-md-12"><button class="btn btn-outline-secondary w-100 text-start" id="btnExpS88"><i class="bi bi-calendar3"></i> Registro das Reuniões (S-88)</button></div>
                         </div>
                     </div>
                 </div>
@@ -1019,6 +1062,7 @@
                 document.getElementById('chkPioReg').checked = !!pData.isPioReg;
                 document.getElementById('chkPioEsp').checked = !!pData.isPioEsp;
                 document.getElementById('chkMiss').checked = !!pData.isMiss;
+                document.getElementById('chkEsposa').checked = !!pData.isEsposa;
 
                 cartaoContainer.style.display = 'block';
 
@@ -1047,7 +1091,8 @@
                 isServo: document.getElementById('chkServo').checked,
                 isPioReg: document.getElementById('chkPioReg').checked,
                 isPioEsp: document.getElementById('chkPioEsp').checked,
-                isMiss: document.getElementById('chkMiss').checked
+                isMiss: document.getElementById('chkMiss').checked,
+                isEsposa: document.getElementById('chkEsposa').checked
             };
 
             const btnOriginal = btnSaveDadosPessoais.innerHTML;
