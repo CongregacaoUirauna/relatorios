@@ -1355,6 +1355,211 @@
             }
         });
 
+        // --- 10.1 FUNÇÕES AUXILIARES DE EXPORTAÇÃO ---
+        
+        async function exportarCartoesPorFiltro(btnElement, nomePasta, filtroCallback) {
+            const anoServico = selectVisitaAno.value;
+            if (!anoServico) return alert("Selecione um ano de serviço.");
+            const btnOriginal = btnElement.innerHTML;
+            btnElement.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Compactando...';
+            btnElement.disabled = true;
+
+            try {
+                const snapshotPessoas = await pessoasCol.get();
+                const zip = new JSZip();
+                const pasta = zip.folder(nomePasta);
+                const relatoriosCache = await relatoriosCol.get(); 
+                
+                let count = 0;
+                snapshotPessoas.forEach(doc => {
+                    const pessoa = doc.data();
+                    if (filtroCallback(pessoa)) {
+                        count++;
+                        const relatoriosDesteIrmao = [];
+                        relatoriosCache.forEach(docRel => {
+                            if(docRel.data().nome === pessoa.nome) relatoriosDesteIrmao.push(docRel.data());
+                        });
+                        const pdfBlob = generateS21PDF(pessoa.nome, pessoa, relatoriosDesteIrmao, anoServico, false);
+                        pasta.file(`Cartao_${pessoa.nome.replace(/[^a-z0-9]/gi, '_')}.pdf`, pdfBlob);
+                    }
+                });
+
+                if (count === 0) {
+                    alert(`Nenhum registro encontrado para a categoria.`);
+                    return;
+                }
+
+                const zipContent = await zip.generateAsync({type:"blob"});
+                saveAs(zipContent, `${nomePasta}_Ano_${anoServico.replace('/','-')}.zip`);
+            } catch (error) {
+                console.error("Erro na exportação:", error);
+                alert("Erro ao exportar.");
+            } finally {
+                btnElement.innerHTML = btnOriginal;
+                btnElement.disabled = false;
+            }
+        }
+
+        async function exportarTotalGrupo(btnElement, grupoFiltroNome, tituloCartao) {
+            const anoServico = selectVisitaAno.value;
+            if (!anoServico) return alert("Selecione o ano de serviço.");
+            const btnOriginal = btnElement.innerHTML;
+            btnElement.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Calculando...';
+            btnElement.disabled = true;
+
+            try {
+                const relatoriosCache = await relatoriosCol.where("grupo", "==", grupoFiltroNome).get();
+                const relAgregados = [];
+                const [anoInicio, anoFim] = anoServico.split('/');
+                const estruturaMeses = [ "Setembro", "Outubro", "Novembro", "Dezembro", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto" ];
+
+                estruturaMeses.forEach((mes, index) => {
+                    const anoAtualMes = index < 4 ? anoInicio : anoFim;
+                    const mesRef = `${mes}/${anoAtualMes}`;
+                    let totalEstudos = 0; let totalHoras = 0; let countRelataram = 0;
+
+                    relatoriosCache.forEach(doc => {
+                        const r = doc.data();
+                        if (r.mesReferencia === mesRef) {
+                            totalEstudos += Number(r.estudos || 0);
+                            totalHoras += Number(r.horas || 0);
+                            if (r.participou === "Sim" || r.estudos > 0 || r.horas > 0) {
+                                countRelataram++;
+                            }
+                        }
+                    });
+
+                    if (countRelataram > 0) {
+                        relAgregados.push({
+                            mesReferencia: mesRef,
+                            participou: "Sim",
+                            estudos: totalEstudos,
+                            horas: totalHoras,
+                            grupo: grupoFiltroNome, 
+                            observacoes: `${countRelataram} relataram`
+                        });
+                    }
+                });
+
+                const pdfBlob = generateS21PDF(tituloCartao, {}, relAgregados, anoServico, true);
+                const zip = new JSZip();
+                zip.folder("Totais").file(`${tituloCartao.replace(/ /g, '_')}.pdf`, pdfBlob);
+                const zipContent = await zip.generateAsync({type:"blob"});
+                saveAs(zipContent, `Total_${grupoFiltroNome.replace(/ /g, '_')}_${anoServico.replace('/','-')}.zip`);
+
+            } catch (error) {
+                console.error("Erro nos totais:", error);
+                alert("Erro ao gerar totais.");
+            } finally {
+                btnElement.innerHTML = btnOriginal;
+                btnElement.disabled = false;
+            }
+        }
+
+        // --- 10.2 ATIVAÇÃO DOS BOTÕES RESTANTES ---
+
+        // Grupo 1: Cartões Individuais
+        btnExpPioReg.addEventListener("click", () => exportarCartoesPorFiltro(btnExpPioReg, "Pioneiros_Regulares", p => p.grupo === "Pioneiro Regular"));
+        btnExpPioEsp.addEventListener("click", () => exportarCartoesPorFiltro(btnExpPioEsp, "Pioneiros_Especiais", p => p.grupo === "Pioneiro Especial"));
+        btnExpLideranca.addEventListener("click", () => exportarCartoesPorFiltro(btnExpLideranca, "Lideranca_e_Esposas", p => p.isAnciao || p.isServo || p.isEsposa));
+
+        // Grupo 2: Totais
+        btnTotPub.addEventListener("click", () => exportarTotalGrupo(btnTotPub, "Publicador", "Totais dos publicadores"));
+        btnTotAux.addEventListener("click", () => exportarTotalGrupo(btnTotAux, "Pioneiro Auxiliar", "Totais dos pioneiros auxiliares"));
+        btnTotReg.addEventListener("click", () => exportarTotalGrupo(btnTotReg, "Pioneiro Regular", "Totais dos pioneiros regulares"));
+        btnTotEsp.addEventListener("click", () => exportarTotalGrupo(btnTotEsp, "Pioneiro Especial", "Totais dos pioneiros especiais"));
+
+        // Grupo 3: S-88 (Reuniões)
+        btnExpS88.addEventListener("click", async () => {
+            const anoServico = selectVisitaAno.value;
+            if (!anoServico) return alert("Selecione o ano de serviço.");
+            const btnOriginal = btnExpS88.innerHTML;
+            btnExpS88.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Gerando S-88...';
+            btnExpS88.disabled = true;
+
+            try {
+                const docPdf = new jsPDF();
+                docPdf.setFontSize(14); docPdf.setFont("helvetica", "bold");
+                docPdf.text("REGISTRO DA ASSISTÊNCIA ÀS REUNIÕES CONGREGACIONAIS", 105, 15, { align: "center" });
+
+                const [anoInicio, anoFim] = anoServico.split('/');
+                const meses = [ "Setembro", "Outubro", "Novembro", "Dezembro", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto" ];
+                
+                // Busca todas as reuniões
+                const reunioesSnapshot = await reunioesCol.get();
+                const todasReunioes = [];
+                reunioesSnapshot.forEach(r => todasReunioes.push(r.data()));
+
+                const tableMeio = []; const tableFim = [];
+                let grandTotalMeio = 0; let grandQtdMeio = 0;
+                let grandTotalFim = 0; let grandQtdFim = 0;
+
+                meses.forEach((mes, index) => {
+                    const numMes = index < 4 ? index + 9 : index - 3; // 9 = Setembro, 1 = Janeiro
+                    const anoAtual = index < 4 ? anoInicio : anoFim;
+                    
+                    let assistMeio = 0; let qtdMeio = 0;
+                    let assistFim = 0; let qtdFim = 0;
+
+                    todasReunioes.forEach(r => {
+                        // Data format PT-BR: DD/MM/YYYY
+                        const parts = r.data.split('/');
+                        if (parts.length === 3) {
+                            const rMes = parseInt(parts[1], 10);
+                            const rAno = parseInt(parts[2], 10);
+                            if (rMes === numMes && rAno == anoAtual) {
+                                if (r.tipo === "Meio de Semana") { assistMeio += r.quantidade; qtdMeio++; }
+                                else if (r.tipo === "Fim de Semana") { assistFim += r.quantidade; qtdFim++; }
+                            }
+                        }
+                    });
+
+                    const mediaMeio = qtdMeio > 0 ? Math.round(assistMeio / qtdMeio) : "";
+                    const mediaFim = qtdFim > 0 ? Math.round(assistFim / qtdFim) : "";
+
+                    grandTotalMeio += assistMeio; grandQtdMeio += qtdMeio;
+                    grandTotalFim += assistFim; grandQtdFim += qtdFim;
+
+                    tableMeio.push([mes, qtdMeio > 0 ? qtdMeio : "", assistMeio > 0 ? assistMeio : "", mediaMeio]);
+                    tableFim.push([mes, qtdFim > 0 ? qtdFim : "", assistFim > 0 ? assistFim : "", mediaFim]);
+                });
+
+                const mediaGeralMeio = grandQtdMeio > 0 ? Math.round(grandTotalMeio / grandQtdMeio) : "";
+                const mediaGeralFim = grandQtdFim > 0 ? Math.round(grandTotalFim / grandQtdFim) : "";
+
+                // Desenha Tabela Meio de Semana
+                docPdf.setFontSize(11); docPdf.text("Reunião do meio de semana", 14, 25);
+                docPdf.autoTable({
+                    startY: 28, head: [['Ano de serviço', 'Quantidade de reuniões', 'Assistência total', 'Assistência média por semana']],
+                    body: tableMeio,
+                    foot: [['Assistência média por mês', '', '', mediaGeralMeio.toString()]],
+                    theme: 'grid', styles: { halign: 'center' }, columnStyles: { 0: { halign: 'left', fontStyle: 'bold' } }, headStyles: { fillColor: [240, 240, 240], textColor: 20 }
+                });
+
+                // Desenha Tabela Fim de Semana
+                docPdf.text("Reunião do fim de semana", 14, docPdf.lastAutoTable.finalY + 10);
+                docPdf.autoTable({
+                    startY: docPdf.lastAutoTable.finalY + 13, head: [['Ano de serviço', 'Quantidade de reuniões', 'Assistência total', 'Assistência média por semana']],
+                    body: tableFim,
+                    foot: [['Assistência média por mês', '', '', mediaGeralFim.toString()]],
+                    theme: 'grid', styles: { halign: 'center' }, columnStyles: { 0: { halign: 'left', fontStyle: 'bold' } }, headStyles: { fillColor: [240, 240, 240], textColor: 20 }
+                });
+
+                // Baixa o S-88
+                const zip = new JSZip();
+                zip.folder("Registro_Reunioes").file(`S-88_Ano_${anoServico.replace('/','-')}.pdf`, docPdf.output('blob'));
+                const zipContent = await zip.generateAsync({type:"blob"});
+                saveAs(zipContent, `Registro_Reunioes_S88_${anoServico.replace('/','-')}.zip`);
+
+            } catch (error) {
+                console.error("Erro S-88:", error);
+                alert("Erro ao gerar Registro de Reuniões.");
+            } finally {
+                btnExpS88.innerHTML = btnOriginal;
+                btnExpS88.disabled = false;
+            }
+        });
+
     </script>
 </body>
 </html>
