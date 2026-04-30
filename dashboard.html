@@ -424,6 +424,12 @@
     </div>
 
 
+    <!-- Bibliotecas do Motor de Exportação (PDF e ZIP) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -482,6 +488,18 @@
         const btnLoadCartao = document.getElementById('btnLoadCartao');
         const cartaoContainer = document.getElementById('cartaoContainer');
         const btnSaveDadosPessoais = document.getElementById('btnSaveDadosPessoais');
+
+        // Elementos da Central da Visita
+        const selectVisitaAno = document.getElementById('selectVisitaAno');
+        const btnExpTodosPubs = document.getElementById('btnExpTodosPubs');
+        const btnExpPioReg = document.getElementById('btnExpPioReg');
+        const btnExpPioEsp = document.getElementById('btnExpPioEsp');
+        const btnExpLideranca = document.getElementById('btnExpLideranca');
+        const btnTotPub = document.getElementById('btnTotPub');
+        const btnTotAux = document.getElementById('btnTotAux');
+        const btnTotReg = document.getElementById('btnTotReg');
+        const btnTotEsp = document.getElementById('btnTotEsp');
+        const btnExpS88 = document.getElementById('btnExpS88');
 
         // =================================================================
         // 4. LÓGICA DE AUTENTICAÇÃO
@@ -1031,6 +1049,9 @@
 
             btnLoadCartao.addEventListener("click", loadCartaoData);
             btnSaveDadosPessoais.addEventListener("click", saveDadosPessoaisCartao);
+            
+            // Espelha os anos de serviço para a aba da Visita
+            selectVisitaAno.innerHTML = selectCartaoAno.innerHTML;
         }
 
         async function loadCartaoData() {
@@ -1192,6 +1213,147 @@
             document.getElementById('totCartaoEst').textContent = totEstudos;
             document.getElementById('totCartaoHoras').textContent = totHoras;
         }
+
+        // =================================================================
+        // 10. MOTOR DE EXPORTAÇÃO (VISITA DO VIAJANTE)
+        // =================================================================
+        window.jsPDF = window.jspdf.jsPDF;
+
+        // Função Genérica que desenha o PDF de UM Cartão S-21
+        function generateS21PDF(nome, dadosPessoais, relatoriosAno, anoServico, isTotal = false) {
+            const doc = new jsPDF();
+            
+            // Cabeçalho
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("REGISTRO DE PUBLICADOR DE CONGREGAÇÃO", 105, 15, { align: "center" });
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            
+            if (isTotal) {
+                doc.text(`Nome: ${nome}`, 14, 25);
+                doc.text(`Ano de Serviço: ${anoServico}`, 150, 25);
+            } else {
+                // Dados Pessoais (Espelhando o S-21 real)
+                doc.text(`Nome: ${nome}`, 14, 25);
+                doc.text(`Data de nascimento: ${dadosPessoais.dataNascimento || '___/___/___'}`, 14, 32);
+                doc.text(`Gênero: ${dadosPessoais.genero || '______'}`, 100, 32);
+                doc.text(`Data de batismo: ${dadosPessoais.dataBatismo || '___/___/___'}`, 150, 32);
+                
+                doc.text(`Esperança: ${dadosPessoais.esperanca || '__________________'}`, 14, 39);
+                
+                // Designações (Apenas as marcadas)
+                let designacoes = [];
+                if (dadosPessoais.isAnciao) designacoes.push("Ancião");
+                if (dadosPessoais.isServo) designacoes.push("Servo Ministerial");
+                if (dadosPessoais.isPioReg) designacoes.push("Pioneiro Regular");
+                if (dadosPessoais.isPioEsp) designacoes.push("Pioneiro Especial");
+                if (dadosPessoais.isMiss) designacoes.push("Missionário");
+                
+                doc.text(`Designações: ${designacoes.length > 0 ? designacoes.join(', ') : 'Nenhuma'}`, 14, 46);
+            }
+
+            // Monta as Linhas da Tabela usando os dados processados em memória
+            const [anoInicio, anoFim] = anoServico.split('/');
+            const estruturaMeses = [ "Setembro", "Outubro", "Novembro", "Dezembro", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto" ];
+            
+            const tableData = [];
+            let totEstudos = 0; let totHoras = 0;
+
+            estruturaMeses.forEach((mes, index) => {
+                const anoAtualMes = index < 4 ? anoInicio : anoFim;
+                const mesReferencia = `${mes}/${anoAtualMes}`;
+                const rel = relatoriosAno.find(r => r.mesReferencia === mesReferencia);
+                
+                if (rel) {
+                    let participou = (rel.participou === "Sim" || rel.horas > 0 || rel.estudos > 0) ? "Sim" : "";
+                    let estudos = rel.estudos > 0 ? rel.estudos.toString() : "";
+                    let aux = rel.grupo === "Pioneiro Auxiliar" ? "Sim" : "";
+                    let horas = (rel.horas > 0 && (rel.grupo.includes("Pioneiro") || isTotal)) ? rel.horas.toString() : "";
+                    let obs = rel.observacoes || "";
+
+                    totEstudos += Number(rel.estudos || 0);
+                    totHoras += Number(rel.horas || 0);
+
+                    tableData.push([mes, participou, estudos, aux, horas, obs]);
+                } else {
+                    tableData.push([mes, "", "", "", "", ""]);
+                }
+            });
+
+            // Tabela S-21 usando o AutoTable
+            doc.autoTable({
+                startY: isTotal ? 35 : 55,
+                head: [['Mês', 'Participou\nno ministério', 'Estudos\nbíblicos', 'Pioneiro\nauxiliar', 'Horas', 'Observações']],
+                body: tableData,
+                foot: [['Total', '', totEstudos.toString(), '', totHoras.toString(), '']],
+                theme: 'grid',
+                styles: { fontSize: 9, halign: 'center', valign: 'middle' },
+                columnStyles: {
+                    0: { halign: 'left', fontStyle: 'bold' },
+                    5: { halign: 'left' }
+                },
+                headStyles: { fillColor: [240, 240, 240], textColor: 20, fontStyle: 'bold' },
+                footStyles: { fillColor: [240, 240, 240], textColor: 20, fontStyle: 'bold' }
+            });
+
+            return doc.output('blob'); // Retorna o arquivo bruto para o ZIP
+        }
+
+        // Função Ativadora do Botão 1: Exportar Todos os Publicadores
+        btnExpTodosPubs.addEventListener("click", async () => {
+            const anoServico = selectVisitaAno.value;
+            if (!anoServico) return alert("Selecione um ano de serviço.");
+            
+            const btnOriginal = btnExpTodosPubs.innerHTML;
+            btnExpTodosPubs.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Compactando...';
+            btnExpTodosPubs.disabled = true;
+
+            try {
+                // 1. Puxa TODOS os irmãos que são do grupo "Publicador"
+                const snapshotPessoas = await pessoasCol.where("grupo", "==", "Publicador").get();
+                if (snapshotPessoas.empty) {
+                    alert("Nenhum publicador cadastrado.");
+                    return;
+                }
+
+                // 2. Prepara o arquivo ZIP
+                const zip = new JSZip();
+                const pasta = zip.folder("Cartoes_Publicadores");
+
+                // 3. Processa cada publicador
+                const relatoriosCache = await relatoriosCol.get(); // Puxa todos os relatórios de uma vez para otimizar
+                
+                snapshotPessoas.forEach(docPessoa => {
+                    const pessoa = docPessoa.data();
+                    const nome = pessoa.nome;
+                    
+                    // Filtra apenas os relatórios deste irmão na memória
+                    const relatoriosDesteIrmao = [];
+                    relatoriosCache.forEach(docRel => {
+                        if(docRel.data().nome === nome) relatoriosDesteIrmao.push(docRel.data());
+                    });
+
+                    // Gera o PDF em segundo plano
+                    const pdfBlob = generateS21PDF(nome, pessoa, relatoriosDesteIrmao, anoServico, false);
+                    
+                    // Adiciona o PDF dentro da pasta ZIP
+                    pasta.file(`Cartao_${nome.replace(/[^a-z0-9]/gi, '_')}.pdf`, pdfBlob);
+                });
+
+                // 4. Baixa a pasta compactada
+                const zipContent = await zip.generateAsync({type:"blob"});
+                saveAs(zipContent, `Publicadores_Ano_${anoServico.replace('/','-')}.zip`);
+
+            } catch (error) {
+                console.error("Erro na exportação:", error);
+                alert("Erro ao exportar os cartões.");
+            } finally {
+                btnExpTodosPubs.innerHTML = btnOriginal;
+                btnExpTodosPubs.disabled = false;
+            }
+        });
 
     </script>
 </body>
