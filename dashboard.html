@@ -1223,35 +1223,74 @@
         function generateS21PDF(nome, dadosPessoais, relatoriosAno, anoServico, isTotal = false) {
             const doc = new jsPDF();
             
-            // Cabeçalho
+            // Função auxiliar para desenhar checkboxes perfeitamente alinhados
+            const drawCheckbox = (x, y, label, isChecked) => {
+                doc.setLineWidth(0.2);
+                doc.rect(x, y - 3.2, 3, 3); 
+                if (isChecked) {
+                    doc.setFont("helvetica", "bold");
+                    doc.text("X", x + 0.6, y - 0.6); 
+                }
+                doc.setFont("helvetica", "bold");
+                doc.text(label, x + 4, y); 
+            };
+
+            // Função auxiliar para formatar YYYY-MM-DD para DD/MM/YYYY
+            const formatarData = (dataString) => {
+                if (!dataString) return '___/___/___';
+                const partes = dataString.split('-');
+                return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : dataString;
+            };
+
+            // Título Principal
             doc.setFontSize(14);
             doc.setFont("helvetica", "bold");
             doc.text("REGISTRO DE PUBLICADOR DE CONGREGAÇÃO", 105, 15, { align: "center" });
             
             doc.setFontSize(10);
-            doc.setFont("helvetica", "normal");
             
             if (isTotal) {
-                doc.text(`Nome: ${nome}`, 14, 25);
-                doc.text(`Ano de Serviço: ${anoServico}`, 150, 25);
+                doc.setFont("helvetica", "bold");
+                doc.text("Nome:", 14, 25);
+                doc.setFont("helvetica", "normal");
+                doc.text(nome, 27, 25);
+                
+                doc.setFont("helvetica", "bold");
+                doc.text("Ano de Serviço:", 150, 25);
+                doc.setFont("helvetica", "normal");
+                doc.text(anoServico, 178, 25);
             } else {
-                // Dados Pessoais (Espelhando o S-21 real)
-                doc.text(`Nome: ${nome}`, 14, 25);
-                doc.text(`Data de nascimento: ${dadosPessoais.dataNascimento || '___/___/___'}`, 14, 32);
-                doc.text(`Gênero: ${dadosPessoais.genero || '______'}`, 100, 32);
-                doc.text(`Data de batismo: ${dadosPessoais.dataBatismo || '___/___/___'}`, 150, 32);
+                // Linha 1: Nome
+                doc.setFont("helvetica", "bold");
+                doc.text("Nome:", 14, 25);
+                doc.setFont("helvetica", "normal");
+                doc.text(nome, 27, 25);
                 
-                doc.text(`Esperança: ${dadosPessoais.esperanca || '__________________'}`, 14, 39);
+                // Linha 2: Nascimento e Gênero
+                doc.setFont("helvetica", "bold");
+                doc.text("Data de nascimento:", 14, 32);
+                doc.setFont("helvetica", "normal");
+                doc.text(formatarData(dadosPessoais.dataNascimento), 49, 32);
                 
-                // Designações (Apenas as marcadas)
-                let designacoes = [];
-                if (dadosPessoais.isAnciao) designacoes.push("Ancião");
-                if (dadosPessoais.isServo) designacoes.push("Servo Ministerial");
-                if (dadosPessoais.isPioReg) designacoes.push("Pioneiro Regular");
-                if (dadosPessoais.isPioEsp) designacoes.push("Pioneiro Especial");
-                if (dadosPessoais.isMiss) designacoes.push("Missionário");
-                
-                doc.text(`Designações: ${designacoes.length > 0 ? designacoes.join(', ') : 'Nenhuma'}`, 14, 46);
+                drawCheckbox(120, 32, "Masculino", dadosPessoais.genero === "Masculino");
+                drawCheckbox(155, 32, "Feminino", dadosPessoais.genero === "Feminino");
+
+                // Linha 3: Batismo e Esperança
+                doc.setFont("helvetica", "bold");
+                doc.text("Data de batismo:", 14, 39);
+                doc.setFont("helvetica", "normal");
+                doc.text(formatarData(dadosPessoais.dataBatismo), 44, 39);
+
+                drawCheckbox(120, 39, "Outras ovelhas", dadosPessoais.esperanca === "Outras ovelhas");
+                drawCheckbox(155, 39, "Ungido", dadosPessoais.esperanca === "Ungido");
+
+                // Linha 4: Designações (Substitui texto corrido por checkboxes alinhados)
+                drawCheckbox(14, 46, "Ancião", !!dadosPessoais.isAnciao);
+                drawCheckbox(35, 46, "Servo ministerial", !!dadosPessoais.isServo);
+                drawCheckbox(72, 46, "Pioneiro regular", !!dadosPessoais.isPioReg);
+                drawCheckbox(108, 46, "Pioneiro especial", !!dadosPessoais.isPioEsp);
+                drawCheckbox(145, 46, "Missionário em campo", !!dadosPessoais.isMiss);
+                doc.setFont("helvetica", "normal"); // Retorna ao normal para a tabela
             }
 
             // Monta as Linhas da Tabela usando os dados processados em memória
