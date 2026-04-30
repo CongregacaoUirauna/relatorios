@@ -426,6 +426,7 @@
 
     <!-- Bibliotecas do Motor de Exportação (PDF e ZIP) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>window.jsPDF = window.jspdf.jsPDF; /* Ponte obrigatória para o AutoTable */</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -1217,7 +1218,6 @@
         // =================================================================
         // 10. MOTOR DE EXPORTAÇÃO (VISITA DO VIAJANTE)
         // =================================================================
-        window.jsPDF = window.jspdf.jsPDF;
 
         // Função Genérica que desenha o PDF de UM Cartão S-21
         function generateS21PDF(nome, dadosPessoais, relatoriosAno, anoServico, isTotal = false) {
