@@ -661,7 +661,57 @@
 
         window.handleUpdateGrupo = async (id, novoGrupo) => { try { await pessoasCol.doc(id).update({ grupo: novoGrupo }); } catch (error) { console.error("Erro ao atualizar grupo: ", error); } };
         window.toggleEditNome = (button, cancel = false) => { const row = button.closest('tr'); const nomeText = row.querySelector('.nome-text'); const nomeInput = row.querySelector('.nome-input'); const defaultButtons = row.querySelector('.default-buttons'); const editButtons = row.querySelector('.edit-buttons'); if (cancel) { nomeInput.value = nomeText.textContent; } nomeText.classList.toggle('editing'); nomeInput.classList.toggle('editing'); defaultButtons.classList.toggle('editing'); editButtons.classList.toggle('editing'); };
-        window.handleUpdateNome = async (button, id) => { const row = button.closest('tr'); const nomeInput = row.querySelector('.nome-input'); const novoNome = nomeInput.value.trim(); if (!novoNome) return; try { await pessoasCol.doc(id).update({ nome: novoNome }); window.toggleEditNome(button, false); } catch (error) { console.error("Erro ao atualizar nome: ", error); } };
+        window.handleUpdateNome = async (button, id) => { 
+            const row = button.closest('tr'); 
+            const nomeText = row.querySelector('.nome-text'); 
+            const nomeInput = row.querySelector('.nome-input'); 
+            
+            const nomeAntigo = nomeText.textContent.trim();
+            const novoNome = nomeInput.value.trim(); 
+            
+            if (!novoNome || novoNome === nomeAntigo) {
+                window.toggleEditNome(button, false);
+                return; 
+            }
+
+            const defaultButtons = row.querySelector('.default-buttons');
+            const editButtons = row.querySelector('.edit-buttons');
+            
+            // UI Feedback (Mostra que está processando)
+            editButtons.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+
+            try { 
+                // 1. Atualiza na coleção mestra (pessoas)
+                await pessoasCol.doc(id).update({ nome: novoNome }); 
+                
+                // 2. Atualização em Cascata (Batch Update) na coleção de relatórios
+                const relatoriosSnapshot = await relatoriosCol.where("nome", "==", nomeAntigo).get();
+                if (!relatoriosSnapshot.empty) {
+                    const batch = db.batch();
+                    relatoriosSnapshot.forEach(doc => {
+                        batch.update(doc.ref, { nome: novoNome });
+                    });
+                    await batch.commit(); // Executa todas as trocas de uma vez de forma segura
+                }
+
+                // 3. Restaura UI
+                nomeText.textContent = novoNome;
+                window.toggleEditNome(button, false); 
+                
+                // Reconstrói os botões para a próxima vez
+                editButtons.innerHTML = `
+                    <button class="btn btn-success btn-sm" onclick="window.handleUpdateNome(this, '${id}')"><i class="bi bi-check-lg"></i></button>
+                    <button class="btn btn-secondary btn-sm" onclick="window.toggleEditNome(this, true)"><i class="bi bi-x-lg"></i></button>
+                `;
+
+                // Recarrega a tela de análise para refletir o novo nome nas métricas
+                loadAllReports();
+
+            } catch (error) { 
+                console.error("Erro ao atualizar nome: ", error); 
+                alert("Erro ao alterar o nome. Verifique a conexão.");
+            } 
+        };
         window.handleDeletePessoa = async (id, nome) => { if (confirm(`Tem certeza que deseja excluir ${nome}?`)) { try { await pessoasCol.doc(id).delete(); } catch (error) { console.error("Erro ao excluir pessoa: ", error); } } };
 
         // =================================================================
