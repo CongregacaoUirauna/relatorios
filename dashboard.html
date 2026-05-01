@@ -180,7 +180,12 @@
                                     
                                     <div class="tab-pane fade" id="individual-tab-pane" role="tabpanel" aria-labelledby="individual-tab" tabindex="0">
                                         <div class="p-3 border border-top-0 rounded-bottom">
-                                            <h6 class="text-muted">Lista de Envios Individuais</h6>
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="text-muted mb-0">Lista de Envios Individuais</h6>
+                                                <button class="btn btn-success btn-sm" onclick="window.openAddRelatorioModal()">
+                                                    <i class="bi bi-plus-circle"></i> Lançamento Manual
+                                                </button>
+                                            </div>
                                             <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                                                 <table class="table table-sm table-striped table-hover table-reports align-middle">
                                                     <thead>
@@ -923,6 +928,149 @@
                 alert("Falha ao excluir a reunião.");
             }
         };
+
+        // --- LANÇADOR RETROATIVO (NOVO) ---
+        window.openAddRelatorioModal = async () => {
+            editModalLabel.textContent = "Novo Lançamento Manual";
+            editModalBody.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+            editModalSaveButton.onclick = window.saveNewRelatorio;
+            editModal.show();
+
+            try {
+                const snapshot = await pessoasCol.orderBy("nome").get();
+                let pessoasOptions = '<option value="">Selecione o Publicador...</option>';
+                snapshot.forEach(doc => {
+                    pessoasOptions += `<option value="${doc.id}" data-grupo="${doc.data().grupo}">${doc.data().nome}</option>`;
+                });
+
+                const currentYear = new Date().getFullYear();
+                const currentMonth = new Date().getMonth();
+                let mesesOptions = nomesMeses.map((m, i) => `<option value="${i}" ${i === currentMonth ? 'selected' : ''}>${m}</option>`).join('');
+                let anosOptions = '';
+                for(let i = currentYear - 3; i <= currentYear + 1; i++) anosOptions += `<option value="${i}" ${i === currentYear ? 'selected' : ''}>${i}</option>`;
+
+                editModalBody.innerHTML = `
+                    <div class="mb-3">
+                        <label class="form-label text-muted small mb-0">Publicador</label>
+                        <select id="modal_add_pessoa" class="form-select" onchange="window.toggleAddRelatorioFields(this.options[this.selectedIndex].dataset.grupo)">
+                            ${pessoasOptions}
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-muted small mb-0">Mês de Referência</label>
+                            <select id="modal_add_mes" class="form-select">${mesesOptions}</select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-muted small mb-0">Ano</label>
+                            <select id="modal_add_ano" class="form-select">${anosOptions}</select>
+                        </div>
+                    </div>
+                    <div id="modal_add_dynamic_fields" class="p-3 bg-light border rounded" style="display: none;"></div>
+                `;
+            } catch (error) {
+                console.error("Erro ao carregar pessoas para lançamento manual:", error);
+                editModalBody.innerHTML = '<p class="text-danger">Erro ao carregar formulário.</p>';
+            }
+        };
+
+        window.toggleAddRelatorioFields = (grupo) => {
+            const container = document.getElementById('modal_add_dynamic_fields');
+            if (!grupo) {
+                container.style.display = 'none';
+                container.innerHTML = '';
+                return;
+            }
+            container.style.display = 'block';
+            let html = '';
+            
+            if (grupo === "Pioneiro Auxiliar" || grupo === "Pioneiro Regular" || grupo === "Pioneiro Especial" || grupo === "Missionário em campo") {
+                html = `
+                    <div class="mb-3">
+                        <label for="modal_add_horas" class="form-label fw-bold">Total de Horas:</label>
+                        <input type="number" id="modal_add_horas" class="form-control" value="0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modal_add_estudos" class="form-label fw-bold">Estudos Bíblicos:</label>
+                        <input type="number" id="modal_add_estudos" class="form-control" value="0">
+                    </div>
+                    <div class="mb-2">
+                        <label for="modal_add_obs" class="form-label text-muted small mb-0">Observações:</label>
+                        <textarea id="modal_add_obs" class="form-control" rows="2"></textarea>
+                    </div>
+                `;
+            } else if (grupo === "Publicador") {
+                html = `
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Participou no ministério?</label>
+                        <div class="form-check">
+                            <input type="radio" name="modal_add_participou" id="modal_add_partSim" value="Sim" class="form-check-input" checked>
+                            <label for="modal_add_partSim" class="form-check-label">Sim</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" name="modal_add_participou" id="modal_add_partNao" value="Não" class="form-check-input">
+                            <label for="modal_add_partNao" class="form-check-label">Não</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modal_add_estudos" class="form-label fw-bold">Estudos Bíblicos:</label>
+                        <input type="number" id="modal_add_estudos" class="form-control" value="0">
+                    </div>
+                    <div class="mb-2">
+                        <label for="modal_add_obs" class="form-label text-muted small mb-0">Observações:</label>
+                        <textarea id="modal_add_obs" class="form-control" rows="2"></textarea>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        };
+
+        window.saveNewRelatorio = async () => {
+            const selectPessoa = document.getElementById('modal_add_pessoa');
+            const nome = selectPessoa.options[selectPessoa.selectedIndex]?.text;
+            const grupo = selectPessoa.options[selectPessoa.selectedIndex]?.dataset.grupo;
+            const mesIdx = document.getElementById('modal_add_mes').value;
+            const ano = document.getElementById('modal_add_ano').value;
+
+            if (!selectPessoa.value || !mesIdx || !ano) {
+                alert("Por favor, selecione o publicador, o mês e o ano.");
+                return;
+            }
+
+            const mesReferencia = `${nomesMeses[mesIdx]}/${ano}`;
+
+            const novoRelatorio = {
+                nome: nome,
+                grupo: grupo,
+                mesReferencia: mesReferencia,
+                timestampEnvio: firebase.firestore.FieldValue.serverTimestamp(),
+                estudos: Number(document.getElementById("modal_add_estudos").value) || 0,
+                observacoes: document.getElementById("modal_add_obs").value || ""
+            };
+
+            if (grupo !== "Publicador") {
+                novoRelatorio.horas = Number(document.getElementById("modal_add_horas").value) || 0;
+            } else {
+                novoRelatorio.participou = document.querySelector('input[name="modal_add_participou"]:checked').value;
+            }
+
+            const originalBtnText = editModalSaveButton.innerHTML;
+            editModalSaveButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
+            editModalSaveButton.disabled = true;
+
+            try {
+                await relatoriosCol.add(novoRelatorio);
+                editModal.hide();
+                loadAllReports(); // Recarrega a tabela e os totais
+            } catch (error) {
+                console.error("Erro ao adicionar relatório manual:", error);
+                alert("Falha ao salvar. Tente novamente.");
+            } finally {
+                editModalSaveButton.innerHTML = originalBtnText;
+                editModalSaveButton.disabled = false;
+            }
+        };
+        // --- FIM DO LANÇADOR RETROATIVO ---
 
         window.openEditRelatorioModal = async (id) => {
             try {
