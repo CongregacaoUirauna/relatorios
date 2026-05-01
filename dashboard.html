@@ -673,12 +673,11 @@
                 window.toggleEditNome(button, false);
                 return; 
             }
-
-            const defaultButtons = row.querySelector('.default-buttons');
-            const editButtons = row.querySelector('.edit-buttons');
             
-            // UI Feedback (Mostra que está processando)
-            editButtons.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+            // UI Feedback: Altera apenas o interior do botão, sem remover ele da linha (TR)
+            const originalBtnContent = button.innerHTML;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            button.disabled = true;
 
             try { 
                 // 1. Atualiza na coleção mestra (pessoas)
@@ -696,20 +695,18 @@
 
                 // 3. Restaura UI
                 nomeText.textContent = novoNome;
+                button.innerHTML = originalBtnContent; // Devolve o ícone original
+                button.disabled = false;
                 window.toggleEditNome(button, false); 
                 
-                // Reconstrói os botões para a próxima vez
-                editButtons.innerHTML = `
-                    <button class="btn btn-success btn-sm" onclick="window.handleUpdateNome(this, '${id}')"><i class="bi bi-check-lg"></i></button>
-                    <button class="btn btn-secondary btn-sm" onclick="window.toggleEditNome(this, true)"><i class="bi bi-x-lg"></i></button>
-                `;
-
                 // Recarrega a tela de análise para refletir o novo nome nas métricas
                 loadAllReports();
 
             } catch (error) { 
                 console.error("Erro ao atualizar nome: ", error); 
                 alert("Erro ao alterar o nome. Verifique a conexão.");
+                button.innerHTML = originalBtnContent;
+                button.disabled = false;
             } 
         };
         window.handleDeletePessoa = async (id, nome) => { if (confirm(`Tem certeza que deseja excluir ${nome}?`)) { try { await pessoasCol.doc(id).delete(); } catch (error) { console.error("Erro ao excluir pessoa: ", error); } } };
