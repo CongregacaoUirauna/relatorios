@@ -327,6 +327,10 @@
                                         <option value="Ungido">Ungido</option>
                                     </select>
                                 </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold text-primary small mb-0">Chegada na Congregação/Começou como publicador</label>
+                                    <input type="month" id="cartaoChegada" class="form-control form-control-sm border-primary" title="Deixe em branco se for desde sempre">
+                                </div>
                                 <div class="col-12">
                                     <label class="form-label text-muted small mb-0">Designações (Marque as aplicáveis)</label>
                                     <div class="d-flex gap-3 mt-1 flex-wrap">
@@ -699,10 +703,33 @@
         async function loadFieldReports(mesReferencia) {
             relatoriosEnviadosBody.innerHTML = ''; 
             try {
+                // Cálculo do mês absoluto do Dashboard atual para o Filtro Temporal
+                const dashboardMes = parseInt(selectMes.value);
+                const dashboardAno = parseInt(selectAno.value);
+                const dashboardAbsoluto = (dashboardAno * 12) + dashboardMes;
+
                 const pessoasSnapshot = await pessoasCol.get();
                 const allPessoas = new Map(); 
+                
                 pessoasSnapshot.forEach(doc => {
-                    allPessoas.set(doc.data().nome, doc.data().grupo);
+                    const p = doc.data();
+                    let deveAparecer = true;
+                    
+                    // Se o irmão tem um mês de chegada registrado (Ex: "2025-11")
+                    if (p.mesChegada) {
+                        const parts = p.mesChegada.split('-');
+                        if (parts.length === 2) {
+                            const chegadaAbsoluta = (parseInt(parts[0], 10) * 12) + (parseInt(parts[1], 10) - 1);
+                            // Se o mês do dashboard for ANTERIOR à chegada dele, o sistema ignora o irmão!
+                            if (dashboardAbsoluto < chegadaAbsoluta) {
+                                deveAparecer = false;
+                            }
+                        }
+                    }
+                    
+                    if (deveAparecer) {
+                        allPessoas.set(p.nome, p.grupo);
+                    }
                 });
 
                 const relatoriosSnapshot = await relatoriosCol.where("mesReferencia", "==", mesReferencia).get();
@@ -1114,15 +1141,19 @@
                                 <label for="modal_participouNao" class="form-check-label">Não</label>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="modal_pub_estudos" class="form-label">Estudos Bíblicos:</label>
-                            <input type="number" id="modal_pub_estudos" class="form-control" value="${rel.estudos || 0}">
-                        </div>
-                    `;
-                }
-                editModalBody.innerHTML = modalHtml;
-                editModalSaveButton.onclick = () => window.saveRelatorio(id, rel.grupo);
-                editModal.show();
+                    <div class="mb-3">
+                        <label for="modal_pub_estudos" class="form-label">Estudos Bíblicos:</label>
+                        <input type="number" id="modal_pub_estudos" class="form-control" value="${rel.estudos || 0}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modal_pub_observacoes" class="form-label">Observações (Pastoreio, etc):</label>
+                        <textarea id="modal_pub_observacoes" class="form-control" rows="2">${rel.observacoes || ''}</textarea>
+                    </div>
+                `;
+            }
+            editModalBody.innerHTML = modalHtml;
+            editModalSaveButton.onclick = () => window.saveRelatorio(id, rel.grupo);
+            editModal.show();
             } catch (error) {
                 console.error("Erro ao abrir modal de relatório: ", error);
                 alert("Falha ao carregar dados para edição.");
@@ -1138,6 +1169,7 @@
                 } else if (grupo === "Publicador") {
                     updateData.participou = document.querySelector('input[name="modal_participou"]:checked').value;
                     updateData.estudos = Number(document.getElementById("modal_pub_estudos").value) || 0;
+                    updateData.observacoes = document.getElementById("modal_pub_observacoes").value || "";
                 }
                 await relatoriosCol.doc(id).update(updateData);
                 const row = document.querySelector(`#relatorios-enviados-body tr[data-id="${id}"]`);
@@ -1286,6 +1318,7 @@
                 document.getElementById('cartaoGenero').value = pData.genero || '';
                 document.getElementById('cartaoBatismo').value = pData.dataBatismo || '';
                 document.getElementById('cartaoEsperanca').value = pData.esperanca || '';
+                document.getElementById('cartaoChegada').value = pData.mesChegada || '';
                 document.getElementById('chkAnciao').checked = !!pData.isAnciao;
                 document.getElementById('chkServo').checked = !!pData.isServo;
                 document.getElementById('chkPioReg').checked = !!pData.isPioReg;
@@ -1316,6 +1349,7 @@
                 genero: document.getElementById('cartaoGenero').value,
                 dataBatismo: document.getElementById('cartaoBatismo').value,
                 esperanca: document.getElementById('cartaoEsperanca').value,
+                mesChegada: document.getElementById('cartaoChegada').value,
                 isAnciao: document.getElementById('chkAnciao').checked,
                 isServo: document.getElementById('chkServo').checked,
                 isPioReg: document.getElementById('chkPioReg').checked,
