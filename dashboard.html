@@ -114,6 +114,12 @@
                         <i class="bi bi-briefcase-fill"></i> Visita do Viajante
                     </button>
                 </li>
+                <!-- NOVA ABA: RAIO-X DE PIONEIROS -->
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="task-raiox-tab" data-bs-toggle="tab" data-bs-target="#task-raiox-pane" type="button" role="tab" aria-controls="task-raiox-pane" aria-selected="false">
+                        <i class="bi bi-clipboard2-pulse"></i> Análise dos Pioneiros
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content" id="mainTasksTabContent">
@@ -402,6 +408,58 @@
                     </div>
                 </div>
 
+                <!-- NOVA ABA: CORPO DO RAIO-X DE PIONEIROS -->
+                <div class="tab-pane fade" id="task-raiox-pane" role="tabpanel" aria-labelledby="task-raiox-tab" tabindex="0">
+                    <div class="card p-3 p-md-4 border-0 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                            <h4><i class="bi bi-clipboard2-pulse"></i> Análise dos Pioneiros Regulares</h4>
+                        </div>
+                        <p class="text-muted">Analise o desempenho e a meta de 50 horas mensais em um período customizado.</p>
+                        
+                        <!-- Filtros de Período -->
+                        <div class="row g-3 mb-4 p-3 bg-light border rounded align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold small">Mês Inicial</label>
+                                <select id="rxMesInicio" class="form-select form-select-sm"></select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold small">Ano Inicial</label>
+                                <select id="rxAnoInicio" class="form-select form-select-sm"></select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold small">Mês Final</label>
+                                <select id="rxMesFim" class="form-select form-select-sm"></select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold small">Ano Final</label>
+                                <select id="rxAnoFim" class="form-select form-select-sm"></select>
+                            </div>
+                            <div class="col-md-2">
+                                <button id="btnGerarRaioX" class="btn btn-primary btn-sm w-100"><i class="bi bi-search"></i> Gerar</button>
+                            </div>
+                        </div>
+
+                        <!-- Tabela de Resultados -->
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover align-middle text-center border">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="text-start">Nome do Pioneiro</th>
+                                        <th>Meses Ativos</th>
+                                        <th>Total de Horas</th>
+                                        <th>Média Mensal</th>
+                                        <th>Saldo de Horas<br><small>(Meta: 50h/mês)</small></th>
+                                        <th>Média de Estudos</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="raioXTbody">
+                                    <tr><td colspan="6" class="text-muted py-3">Selecione o período e clique em Gerar.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
             </div> 
         </main>
     </div>
@@ -529,6 +587,7 @@
             loadPessoasCRUD();
             loadAllReports(); 
             initCartaoSelectors(); // INICIA A LÓGICA DO CARTÃO
+            initRaioX(); // INICIA A LÓGICA DO RAIO-X
             addPessoaForm.addEventListener("submit", handleAddPessoa);
             loadReportsButton.addEventListener("click", loadAllReports);
         }
@@ -1598,6 +1657,130 @@
                 btnExpS88.disabled = false;
             }
         });
+
+        // =================================================================
+        // 11. MOTOR DE RAIO-X DOS PIONEIROS REGULARES
+        // =================================================================
+        const rxMesInicio = document.getElementById('rxMesInicio');
+        const rxAnoInicio = document.getElementById('rxAnoInicio');
+        const rxMesFim = document.getElementById('rxMesFim');
+        const rxAnoFim = document.getElementById('rxAnoFim');
+        const btnGerarRaioX = document.getElementById('btnGerarRaioX');
+        const raioXTbody = document.getElementById('raioXTbody');
+
+        function initRaioX() {
+            const hoje = new Date();
+            const anoAtual = hoje.getFullYear();
+            
+            nomesMeses.forEach((nome, index) => {
+                rxMesInicio.appendChild(new Option(nome, index));
+                rxMesFim.appendChild(new Option(nome, index));
+            });
+            rxMesInicio.value = 8; // Começa em Setembro como padrão
+            rxMesFim.value = hoje.getMonth(); 
+
+            for (let i = anoAtual + 1; i >= anoAtual - 3; i--) {
+                rxAnoInicio.appendChild(new Option(i, i));
+                rxAnoFim.appendChild(new Option(i, i));
+            }
+            rxAnoInicio.value = hoje.getMonth() >= 8 ? anoAtual : anoAtual - 1;
+            rxAnoFim.value = anoAtual;
+
+            btnGerarRaioX.addEventListener('click', gerarRaioXData);
+        }
+
+        async function gerarRaioXData() {
+            const mInicio = parseInt(rxMesInicio.value);
+            const aInicio = parseInt(rxAnoInicio.value);
+            const mFim = parseInt(rxMesFim.value);
+            const aFim = parseInt(rxAnoFim.value);
+
+            // Transforma mês/ano em número absoluto para calcular intervalo matemático
+            const absInicio = (aInicio * 12) + mInicio;
+            const absFim = (aFim * 12) + mFim;
+            const qtdMesesPeriodo = absFim - absInicio + 1;
+
+            if (qtdMesesPeriodo <= 0) {
+                alert("O mês/ano final deve ser maior ou igual ao mês/ano inicial.");
+                return;
+            }
+
+            btnGerarRaioX.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            btnGerarRaioX.disabled = true;
+
+            try {
+                // 1. Busca os Pioneiros Regulares
+                const pioSnapshot = await pessoasCol.where("grupo", "==", "Pioneiro Regular").get();
+                if (pioSnapshot.empty) {
+                    raioXTbody.innerHTML = '<tr><td colspan="6" class="text-muted">Nenhum Pioneiro Regular cadastrado.</td></tr>';
+                    return;
+                }
+
+                // 2. Busca todos os relatórios
+                const relSnapshot = await relatoriosCol.get();
+                const todosRelatorios = [];
+                relSnapshot.forEach(r => todosRelatorios.push(r.data()));
+
+                raioXTbody.innerHTML = '';
+                const metaMensal = 50;
+
+                pioSnapshot.forEach(docPessoa => {
+                    const nome = docPessoa.data().nome;
+                    let somaHoras = 0;
+                    let somaEstudos = 0;
+                    let mesesEnviados = 0;
+
+                    todosRelatorios.forEach(rel => {
+                        if (rel.nome === nome && rel.mesReferencia) {
+                            const partes = rel.mesReferencia.split('/');
+                            if (partes.length === 2) {
+                                const idxMesRel = nomesMeses.indexOf(partes[0]);
+                                const anoRel = parseInt(partes[1]);
+                                const absRel = (anoRel * 12) + idxMesRel;
+
+                                // Verifica se o relatório cai DENTRO do recorte de tempo escolhido
+                                if (absRel >= absInicio && absRel <= absFim) {
+                                    somaHoras += Number(rel.horas || 0);
+                                    somaEstudos += Number(rel.estudos || 0);
+                                    mesesEnviados++;
+                                }
+                            }
+                        }
+                    });
+
+                    // 3. O Cálculo Frio e Calculista do Desempenho
+                    const metaPeriodo = qtdMesesPeriodo * metaMensal; 
+                    const saldo = somaHoras - metaPeriodo;
+                    const mediaHoras = qtdMesesPeriodo > 0 ? (somaHoras / qtdMesesPeriodo).toFixed(1) : 0;
+                    const mediaEstudos = qtdMesesPeriodo > 0 ? (somaEstudos / qtdMesesPeriodo).toFixed(1) : 0;
+
+                    let corSaldo = 'text-success fw-bold';
+                    let iconeSaldo = '+';
+                    if (saldo < 0) {
+                        corSaldo = 'text-danger fw-bold'; // Alerta Vermelho!
+                        iconeSaldo = ''; // Negativo já vem com o sinal de menos
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-start fw-bold">${nome}</td>
+                        <td class="text-muted">${mesesEnviados} / ${qtdMesesPeriodo} envios</td>
+                        <td class="fw-bold">${somaHoras}</td>
+                        <td>${mediaHoras} h</td>
+                        <td class="${corSaldo}">${iconeSaldo}${saldo} h</td>
+                        <td>${mediaEstudos}</td>
+                    `;
+                    raioXTbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Erro no Raio-X:", error);
+                alert("Falha ao gerar o Raio-X.");
+            } finally {
+                btnGerarRaioX.innerHTML = '<i class="bi bi-search"></i> Gerar';
+                btnGerarRaioX.disabled = false;
+            }
+        }
 
     </script>
 </body>
