@@ -1182,18 +1182,20 @@
         window.saveNewReuniao = async () => {
             const tipo = document.getElementById("modal_add_reuniao_tipo").value;
             const quantidade = Number(document.getElementById("modal_add_reuniao_qtd").value);
-            const dataString = document.getElementById("modal_add_reuniao_data").value;
+            const dataString = document.getElementById("modal_add_reuniao_data").value; // Formato YYYY-MM-DD
 
             if (!tipo || quantidade <= 0 || !dataString) {
-                alert("Preencha a data e insira uma quantidade maior que zero.");
+                alert("Preencha todos os campos corretamente.");
                 return;
             }
 
-            // ATENÇÃO: Pegadinha 2 do Dossiê - Proteção do Fuso Horário!
-            const dataObjeto = new Date(`${dataString}T00:00:00`);
+            // 1. Criar a data de forma ultra-segura (evitando bugs de fuso horário UTC)
+            const partes = dataString.split('-'); // Divide "2025-09-15" em ["2025", "09", "15"]
+            const dataObjeto = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
+            
             const dataTimestamp = firebase.firestore.Timestamp.fromDate(dataObjeto);
             const dataFormatada = dataObjeto.toLocaleDateString('pt-BR', {
-                day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC'
+                day: '2-digit', month: '2-digit', year: 'numeric'
             });
 
             const novaReuniao = {
@@ -1209,11 +1211,21 @@
 
             try {
                 await reunioesCol.add(novaReuniao);
+                
+                // 2. SINCRONIZAÇÃO SÊNIOR: Faz o Dashboard "pular" para o mês/ano da reunião inserida
+                selectMes.value = dataObjeto.getMonth();
+                selectAno.value = dataObjeto.getFullYear();
+
                 editModal.hide();
-                loadAllReports(); // Recarrega a tabela e recalcula as métricas
+                
+                // 3. Recarrega os relatórios (agora já olhando para o mês correto)
+                await loadAllReports(); 
+                
+                alert("Reunião salva e Dashboard atualizado para " + dataFormatada);
+
             } catch (error) {
                 console.error("Erro ao adicionar reunião manual: ", error);
-                alert("Falha ao salvar a reunião. Tente novamente.");
+                alert("Falha ao salvar a reunião.");
             } finally {
                 editModalSaveButton.innerHTML = originalBtnText;
                 editModalSaveButton.disabled = false;
