@@ -694,6 +694,9 @@
         // =================================================================
         // 5. LÓGICA DO DASHBOARD (Inicialização)
         // =================================================================
+        // =================================================================
+        // 5. LÓGICA DO DASHBOARD (Inicialização)
+        // =================================================================
         function initDashboard() {
             populateDateSelectors();
             loadPessoasCRUD();
@@ -701,6 +704,12 @@
             initCartaoSelectors(); // INICIA A LÓGICA DO CARTÃO
             initRaioX(); // INICIA A LÓGICA DO RAIO-X
             carregarTabelaVisitas(); // INICIA A TABELA DO VIAJANTE
+            
+            // --- CORREÇÃO DO MODAL PRESO (Z-INDEX TRAP) ---
+            // Move fisicamente os modais para a raiz do documento, garantindo que fiquem na frente da tela escura
+            document.body.appendChild(document.getElementById('viewDataModal'));
+            document.body.appendChild(document.getElementById('estatisticaVisitaModal'));
+            
             addPessoaForm.addEventListener("submit", handleAddPessoa);
             loadReportsButton.addEventListener("click", loadAllReports);
         }
