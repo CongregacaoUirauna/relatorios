@@ -390,11 +390,10 @@
                 <div class="tab-pane fade" id="task-visita-pane" role="tabpanel" aria-labelledby="task-visita-tab" tabindex="0">
                     <div class="card p-3 p-md-4 border-0 shadow-sm">
                         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                            <h4><i class="bi bi-briefcase-fill"></i> Central de Exportação - Visita do Viajante</h4>
+                            <h4><i class="bi bi-briefcase-fill"></i> Central da Visita do Viajante</h4>
                         </div>
-                        <p class="text-muted">Configure o período que será analisado para a geração dos documentos.</p>
+                        <p class="text-muted">Gere documentos, visualize totais e gerencie as estatísticas para a visita.</p>
                         
-                        <!-- Seletor de Período Manual -->
                         <div class="row g-3 mb-4 p-3 bg-light border rounded">
                             <div class="col-md-5">
                                 <label class="form-label fw-bold">Ano de Serviço Base</label>
@@ -402,22 +401,75 @@
                             </div>
                         </div>
 
-                        <!-- Painel de Botões de Exportação -->
+                        <!-- 1. PAINEL DE ESTATÍSTICAS DA VISITA (EDITÁVEL E INDEPENDENTE) -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                                <h5 class="mb-0 text-primary"><i class="bi bi-clipboard-data"></i> Relatórios Estatísticos de Visita</h5>
+                                <button class="btn btn-primary btn-sm" onclick="window.abrirModalEstatisticaVisita()">
+                                    <i class="bi bi-plus-circle"></i> Novo Relatório
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped align-middle border text-center">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Data Ref.</th>
+                                            <th>Pio. Auxiliares</th>
+                                            <th>Batizados</th>
+                                            <th>Novos Pub.</th>
+                                            <th>Repreendidos</th>
+                                            <th>Removidos</th>
+                                            <th>Readmitidos</th>
+                                            <th style="width: 100px;">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="estatisticasVisitaBody">
+                                        <tr><td colspan="8" class="text-muted py-2">Nenhum relatório estatístico salvo.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 2. PAINEL DE EXPORTAÇÃO E VISUALIZAÇÃO -->
                         <div class="row g-3">
-                            <h6 class="border-bottom pb-1 mt-4">1. Exportação de Cartões Individuais (.zip)</h6>
+                            <h5 class="border-bottom pb-1 mt-4 mb-3"><i class="bi bi-file-earmark-arrow-down"></i> Exportação de Cartões Individuais (.zip)</h5>
                             <div class="col-md-6"><button class="btn btn-outline-primary w-100 text-start" id="btnExpTodosPubs"><i class="bi bi-file-earmark-pdf"></i> Todos os Publicadores</button></div>
                             <div class="col-md-6"><button class="btn btn-outline-primary w-100 text-start" id="btnExpPioReg"><i class="bi bi-file-earmark-pdf"></i> Pioneiros Regulares</button></div>
                             <div class="col-md-6"><button class="btn btn-outline-primary w-100 text-start" id="btnExpPioEsp"><i class="bi bi-file-earmark-pdf"></i> Pioneiros Especiais</button></div>
                             <div class="col-md-6"><button class="btn btn-outline-primary w-100 text-start" id="btnExpLideranca"><i class="bi bi-file-earmark-pdf"></i> Anciãos, Servos e Esposas</button></div>
 
-                            <h6 class="border-bottom pb-1 mt-4">2. Totais por Grupo (.zip com os Cartões de Total)</h6>
-                            <div class="col-md-6"><button class="btn btn-outline-success w-100 text-start" id="btnTotPub"><i class="bi bi-calculator"></i> Totais dos Publicadores</button></div>
-                            <div class="col-md-6"><button class="btn btn-outline-success w-100 text-start" id="btnTotAux"><i class="bi bi-calculator"></i> Totais dos Pioneiros Auxiliares</button></div>
-                            <div class="col-md-6"><button class="btn btn-outline-success w-100 text-start" id="btnTotReg"><i class="bi bi-calculator"></i> Totais dos Pioneiros Regulares</button></div>
-                            <div class="col-md-6"><button class="btn btn-outline-success w-100 text-start" id="btnTotEsp"><i class="bi bi-calculator"></i> Totais dos Pioneiros Especiais</button></div>
-
-                            <h6 class="border-bottom pb-1 mt-4">3. Assistência às Reuniões</h6>
-                            <div class="col-md-12"><button class="btn btn-outline-secondary w-100 text-start" id="btnExpS88"><i class="bi bi-calendar3"></i> Registro das Reuniões (S-88)</button></div>
+                            <h5 class="border-bottom pb-1 mt-4 mb-3"><i class="bi bi-calculator"></i> Totais por Grupo e Reuniões (Visualizar ou Baixar)</h5>
+                            
+                            <div class="col-md-6">
+                                <div class="btn-group w-100">
+                                    <button class="btn btn-outline-success text-start w-100" id="btnTotPub"><i class="bi bi-download"></i> Totais - Publicadores</button>
+                                    <button class="btn btn-success" onclick="window.visualizarTotalEmTela('Publicador', 'Totais dos Publicadores')" title="Visualizar em Tela" style="max-width: 50px;"><i class="bi bi-eye"></i></button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="btn-group w-100">
+                                    <button class="btn btn-outline-success text-start w-100" id="btnTotAux"><i class="bi bi-download"></i> Totais - Pio. Auxiliares</button>
+                                    <button class="btn btn-success" onclick="window.visualizarTotalEmTela('Pioneiro Auxiliar', 'Totais dos Pioneiros Auxiliares')" title="Visualizar em Tela" style="max-width: 50px;"><i class="bi bi-eye"></i></button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="btn-group w-100">
+                                    <button class="btn btn-outline-success text-start w-100" id="btnTotReg"><i class="bi bi-download"></i> Totais - Pio. Regulares</button>
+                                    <button class="btn btn-success" onclick="window.visualizarTotalEmTela('Pioneiro Regular', 'Totais dos Pioneiros Regulares')" title="Visualizar em Tela" style="max-width: 50px;"><i class="bi bi-eye"></i></button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="btn-group w-100">
+                                    <button class="btn btn-outline-success text-start w-100" id="btnTotEsp"><i class="bi bi-download"></i> Totais - Pio. Especiais</button>
+                                    <button class="btn btn-success" onclick="window.visualizarTotalEmTela('Pioneiro Especial', 'Totais dos Pioneiros Especiais')" title="Visualizar em Tela" style="max-width: 50px;"><i class="bi bi-eye"></i></button>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mt-3">
+                                <div class="btn-group w-100">
+                                    <button class="btn btn-outline-secondary text-start w-100" id="btnExpS88"><i class="bi bi-download"></i> Registro de Reuniões (S-88)</button>
+                                    <button class="btn btn-secondary" onclick="window.visualizarS88EmTela()" title="Visualizar em Tela" style="max-width: 50px;"><i class="bi bi-eye"></i></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -487,16 +539,60 @@
                 </div>
                 <div class="modal-body" id="editModalBody">
                     </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="editModalSaveButton">Salvar</button>
+                <!-- MODAL DE VISUALIZAÇÃO EM TELA (TOTAIS E S88) -->
+    <div class="modal fade" id="viewDataModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewDataModalLabel">Visualização de Dados</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="viewDataModalBody">
+                    <!-- Tabela será injetada aqui -->
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- MODAL DO RELATÓRIO ESTATÍSTICO DA VISITA -->
+    <div class="modal fade" id="estatisticaVisitaModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="estatisticaVisitaModalLabel">Relatório Estatístico (Independente)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info py-2 small">
+                        <strong>Dica:</strong> Defina a data da Última Visita e clique em "Puxar Sistema" para calcular os campos automaticamente. Você pode editar os valores à vontade, sem afetar o banco de dados oficial.
+                    </div>
+                    
+                    <div class="row g-2 mb-3 align-items-end border-bottom pb-3">
+                        <div class="col-8">
+                            <label class="form-label small fw-bold mb-0">Data da Última Visita</label>
+                            <input type="date" id="visitaDataInicio" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-4">
+                            <button class="btn btn-primary btn-sm w-100" onclick="window.puxarDadosSistemaVisita()"><i class="bi bi-cloud-download"></i> Puxar Sistema</button>
+                        </div>
+                    </div>
 
-    <!-- Bibliotecas do Motor de Exportação (PDF e ZIP) -->
+                    <div class="row g-3">
+                        <div class="col-6"><label class="form-label small fw-bold mb-0">Pio. Auxiliares (Únicos)</label><input type="number" id="visitaQtdAuxiliares" class="form-control form-control-sm" value="0"></div>
+                        <div class="col-6"><label class="form-label small fw-bold mb-0">Batizados</label><input type="number" id="visitaQtdBatizados" class="form-control form-control-sm" value="0"></div>
+                        <div class="col-6"><label class="form-label small fw-bold mb-0">Novos Publicadores</label><input type="number" id="visitaQtdNovos" class="form-control form-control-sm" value="0"></div>
+                        <div class="col-6"><label class="form-label small fw-bold mb-0 text-danger">Repreendidos (Manual)</label><input type="number" id="visitaQtdRepreendidos" class="form-control form-control-sm" value="0"></div>
+                        <div class="col-6"><label class="form-label small fw-bold mb-0 text-danger">Removidos (Manual)</label><input type="number" id="visitaQtdRemovidos" class="form-control form-control-sm" value="0"></div>
+                        <div class="col-6"><label class="form-label small fw-bold mb-0 text-success">Readmitidos (Manual)</label><input type="number" id="visitaQtdReadmitidos" class="form-control form-control-sm" value="0"></div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between">
+                    <span class="text-muted small">Data do Registro: <span id="visitaDataAtualTexto" class="fw-bold">...</span></span>
+                    <button type="button" class="btn btn-success" id="btnSalvarEstatisticaVisita">Salvar Relatório</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>window.jsPDF = window.jspdf.jsPDF; /* Ponte obrigatória para o AutoTable */</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -528,7 +624,9 @@
         const pessoasCol = db.collection("pessoas");
         const relatoriosCol = db.collection("relatorios");
         const reunioesCol = db.collection("reunioes");
+        const visitasCol = db.collection("visitas_viajante"); // NOVO DB DESACOPLADO
 
+        // --- 3. Elementos do DOM ---
         // --- 3. Elementos do DOM ---
         const loginContainer = document.getElementById("loginContainer");
         const dashboardContainer = document.getElementById("dashboardContainer");
@@ -602,6 +700,7 @@
             loadAllReports(); 
             initCartaoSelectors(); // INICIA A LÓGICA DO CARTÃO
             initRaioX(); // INICIA A LÓGICA DO RAIO-X
+            carregarTabelaVisitas(); // INICIA A TABELA DO VIAJANTE
             addPessoaForm.addEventListener("submit", handleAddPessoa);
             loadReportsButton.addEventListener("click", loadAllReports);
         }
@@ -2098,6 +2197,283 @@
             }
         }
 
+        // =================================================================
+        // 12. MOTOR DE VISUALIZAÇÃO EM TELA E RELATÓRIOS DO VIAJANTE
+        // =================================================================
+
+        // --- VISUALIZAÇÃO DOS TOTAIS EM TELA ---
+        window.visualizarTotalEmTela = async (grupoFiltroNome, tituloCartao) => {
+            const anoServico = selectVisitaAno.value;
+            if (!anoServico) return alert("Selecione o ano de serviço.");
+            
+            const viewModalEl = document.getElementById('viewDataModal');
+            const viewModal = new bootstrap.Modal(viewModalEl);
+            document.getElementById('viewDataModalLabel').textContent = tituloCartao + " (" + anoServico + ")";
+            const body = document.getElementById('viewDataModalBody');
+            body.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">Calculando totais...</p></div>';
+            viewModal.show();
+
+            try {
+                const relatoriosCache = await relatoriosCol.where("grupo", "==", grupoFiltroNome).get();
+                const [anoInicio, anoFim] = anoServico.split('/');
+                const estruturaMeses = [ "Setembro", "Outubro", "Novembro", "Dezembro", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto" ];
+                
+                let htmlTable = `
+                <table class="table table-bordered table-striped text-center align-middle table-sm">
+                    <thead class="table-dark"><tr><th>Mês</th><th>Estudos</th><th>Horas</th><th>Relataram</th></tr></thead>
+                    <tbody>`;
+
+                let totEstudosGeral = 0; let totHorasGeral = 0;
+
+                estruturaMeses.forEach((mes, index) => {
+                    const anoAtualMes = index < 4 ? anoInicio : anoFim;
+                    const mesRef = `${mes}/${anoAtualMes}`;
+                    let totalEstudos = 0; let totalHoras = 0; let countRelataram = 0;
+
+                    relatoriosCache.forEach(doc => {
+                        const r = doc.data();
+                        if (r.mesReferencia === mesRef) {
+                            totalEstudos += Number(r.estudos || 0);
+                            totalHoras += Number(r.horas || 0);
+                            if (r.participou === "Sim" || r.estudos > 0 || r.horas > 0) countRelataram++;
+                        }
+                    });
+
+                    totEstudosGeral += totalEstudos; totHorasGeral += totalHoras;
+
+                    htmlTable += `<tr>
+                        <td class="text-start fw-bold">${mes}</td>
+                        <td>${totalEstudos > 0 ? totalEstudos : '-'}</td>
+                        <td>${totalHoras > 0 ? totalHoras : '-'}</td>
+                        <td class="text-muted">${countRelataram > 0 ? countRelataram + ' irmãos' : '-'}</td>
+                    </tr>`;
+                });
+
+                htmlTable += `</tbody><tfoot class="table-secondary fw-bold">
+                    <tr><td class="text-end">TOTAIS NO ANO:</td><td class="text-primary">${totEstudosGeral}</td><td class="text-primary">${totHorasGeral}</td><td></td></tr>
+                </tfoot></table>`;
+                
+                body.innerHTML = htmlTable;
+            } catch (error) { console.error(error); body.innerHTML = '<div class="alert alert-danger">Erro ao calcular dados de visualização.</div>'; }
+        };
+
+        // --- VISUALIZAÇÃO DO S-88 EM TELA ---
+        window.visualizarS88EmTela = async () => {
+            const anoServico = selectVisitaAno.value;
+            if (!anoServico) return alert("Selecione o ano de serviço.");
+            
+            const viewModalEl = document.getElementById('viewDataModal');
+            const viewModal = new bootstrap.Modal(viewModalEl);
+            document.getElementById('viewDataModalLabel').textContent = "Assistência às Reuniões (S-88) - " + anoServico;
+            const body = document.getElementById('viewDataModalBody');
+            body.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">Analisando reuniões...</p></div>';
+            viewModal.show();
+
+            try {
+                const [anoInicio, anoFim] = anoServico.split('/');
+                const meses = [ "Setembro", "Outubro", "Novembro", "Dezembro", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto" ];
+                
+                const reunioesSnapshot = await reunioesCol.get();
+                const todasReunioes = [];
+                reunioesSnapshot.forEach(r => todasReunioes.push(r.data()));
+
+                let htmlTable = `
+                <table class="table table-bordered table-sm text-center align-middle" style="font-size: 0.9rem;">
+                    <thead class="table-dark">
+                        <tr><th rowspan="2" class="align-middle">Mês</th><th colspan="3">Meio de Semana</th><th colspan="3">Fim de Semana</th></tr>
+                        <tr><th>Qtd.</th><th>Total</th><th>Média</th><th>Qtd.</th><th>Total</th><th>Média</th></tr>
+                    </thead>
+                    <tbody>`;
+
+                let grandTotalMeio = 0; let grandQtdMeio = 0; let grandTotalFim = 0; let grandQtdFim = 0;
+
+                meses.forEach((mes, index) => {
+                    const numMes = index < 4 ? index + 9 : index - 3; 
+                    const anoAtual = index < 4 ? anoInicio : anoFim;
+                    
+                    let assistMeio = 0; let qtdMeio = 0; let assistFim = 0; let qtdFim = 0;
+
+                    todasReunioes.forEach(r => {
+                        const parts = r.data.split('/'); // Data Salva: DD/MM/YYYY
+                        if (parts.length === 3) {
+                            const rMes = parseInt(parts[1], 10);
+                            const rAno = parseInt(parts[2], 10);
+                            if (rMes === numMes && rAno == anoAtual) {
+                                if (r.tipo === "Meio de Semana") { assistMeio += r.quantidade; qtdMeio++; }
+                                else if (r.tipo === "Fim de Semana") { assistFim += r.quantidade; qtdFim++; }
+                            }
+                        }
+                    });
+
+                    const mediaMeio = qtdMeio > 0 ? Math.round(assistMeio / qtdMeio) : "-";
+                    const mediaFim = qtdFim > 0 ? Math.round(assistFim / qtdFim) : "-";
+
+                    grandTotalMeio += assistMeio; grandQtdMeio += qtdMeio;
+                    grandTotalFim += assistFim; grandQtdFim += qtdFim;
+
+                    htmlTable += `<tr>
+                        <td class="text-start fw-bold">${mes}</td>
+                        <td>${qtdMeio || '-'}</td><td>${assistMeio || '-'}</td><td class="text-primary fw-bold">${mediaMeio}</td>
+                        <td>${qtdFim || '-'}</td><td>${assistFim || '-'}</td><td class="text-success fw-bold">${mediaFim}</td>
+                    </tr>`;
+                });
+
+                const mediaGeralMeio = grandQtdMeio > 0 ? Math.round(grandTotalMeio / grandQtdMeio) : "-";
+                const mediaGeralFim = grandQtdFim > 0 ? Math.round(grandTotalFim / grandQtdFim) : "-";
+
+                htmlTable += `</tbody><tfoot class="table-secondary fw-bold">
+                    <tr><td class="text-end">MÉDIA NO ANO:</td><td colspan="2"></td><td class="text-primary fs-6">${mediaGeralMeio}</td><td colspan="2"></td><td class="text-success fs-6">${mediaGeralFim}</td></tr>
+                </tfoot></table>`;
+
+                body.innerHTML = htmlTable;
+            } catch (error) { console.error(error); body.innerHTML = '<div class="alert alert-danger">Erro ao calcular dados do S-88.</div>'; }
+        };
+
+        // --- MOTOR DO RELATÓRIO ESTATÍSTICO DA VISITA (CRUD ISOLADO) ---
+        let currentVisitaEditId = null;
+
+        window.carregarTabelaVisitas = () => {
+            visitasCol.orderBy("dataRegistroTimestamp", "desc").onSnapshot(snapshot => {
+                const tbody = document.getElementById("estatisticasVisitaBody");
+                tbody.innerHTML = "";
+                if (snapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-muted py-2">Nenhum relatório estatístico salvo.</td></tr>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="fw-bold">${d.dataRegistroStr}</td>
+                            <td>${d.auxiliares}</td><td>${d.batizados}</td><td>${d.novos}</td>
+                            <td>${d.repreendidos}</td><td>${d.removidos}</td><td>${d.readmitidos}</td>
+                            <td>
+                                <div class="action-buttons justify-content-center">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="window.abrirModalEstatisticaVisita('${doc.id}')"><i class="bi bi-pencil-fill"></i></button>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="window.excluirEstatisticaVisita('${doc.id}')"><i class="bi bi-trash-fill"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }, error => console.error("Erro ao escutar visitas:", error));
+        };
+
+        window.abrirModalEstatisticaVisita = async (id = null) => {
+            currentVisitaEditId = id;
+            const modal = new bootstrap.Modal(document.getElementById('estatisticaVisitaModal'));
+            
+            document.getElementById('visitaDataInicio').value = '';
+            ['visitaQtdAuxiliares', 'visitaQtdBatizados', 'visitaQtdNovos', 'visitaQtdRepreendidos', 'visitaQtdRemovidos', 'visitaQtdReadmitidos'].forEach(i => document.getElementById(i).value = 0);
+            document.getElementById('visitaDataAtualTexto').textContent = new Date().toLocaleDateString('pt-BR');
+
+            if (id) {
+                const doc = await visitasCol.doc(id).get();
+                if(doc.exists) {
+                    const d = doc.data();
+                    document.getElementById('visitaQtdAuxiliares').value = d.auxiliares;
+                    document.getElementById('visitaQtdBatizados').value = d.batizados;
+                    document.getElementById('visitaQtdNovos').value = d.novos;
+                    document.getElementById('visitaQtdRepreendidos').value = d.repreendidos;
+                    document.getElementById('visitaQtdRemovidos').value = d.removidos;
+                    document.getElementById('visitaQtdReadmitidos').value = d.readmitidos;
+                    document.getElementById('visitaDataAtualTexto').textContent = d.dataRegistroStr;
+                }
+            }
+            modal.show();
+        };
+
+        window.puxarDadosSistemaVisita = async () => {
+            const dataInicioStr = document.getElementById('visitaDataInicio').value;
+            if (!dataInicioStr) return alert("Selecione a data da Última Visita primeiro.");
+
+            // Criando Date isolado do fuso horário via split
+            const partesBusca = dataInicioStr.split('-');
+            const dataBusca = new Date(parseInt(partesBusca[0]), parseInt(partesBusca[1]) - 1, parseInt(partesBusca[2]));
+
+            const btnPuxar = event.currentTarget;
+            const textOrig = btnPuxar.innerHTML;
+            btnPuxar.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            btnPuxar.disabled = true;
+
+            try {
+                // 1. Contar Pioneiros Auxiliares Únicos (pela data do mês de referência)
+                let auxUnicos = new Set();
+                const relSnapshot = await relatoriosCol.where("grupo", "==", "Pioneiro Auxiliar").get();
+                relSnapshot.forEach(doc => {
+                    const rel = doc.data();
+                    const partesRef = rel.mesReferencia.split('/'); // "Outubro/2024"
+                    const idxMes = nomesMeses.indexOf(partesRef[0]);
+                    const dataRelatorio = new Date(parseInt(partesRef[1]), idxMes, 1);
+                    if (dataRelatorio >= dataBusca) auxUnicos.add(rel.nome);
+                });
+
+                // 2. Contar Batizados e Novos Publicadores
+                let countBatizados = 0; let countNovos = 0;
+                const pesSnapshot = await pessoasCol.get();
+                pesSnapshot.forEach(doc => {
+                    const p = doc.data();
+                    if (p.dataBatismo) {
+                        const pb = p.dataBatismo.split('-');
+                        const dataB = new Date(parseInt(pb[0]), parseInt(pb[1]) - 1, parseInt(pb[2]));
+                        if (dataB >= dataBusca) countBatizados++;
+                    }
+                    if (p.mesChegada) {
+                        const pc = p.mesChegada.split('-');
+                        const dataC = new Date(parseInt(pc[0]), parseInt(pc[1]) - 1, 1);
+                        if (dataC >= dataBusca) countNovos++;
+                    }
+                });
+
+                document.getElementById('visitaQtdAuxiliares').value = auxUnicos.size;
+                document.getElementById('visitaQtdBatizados').value = countBatizados;
+                document.getElementById('visitaQtdNovos').value = countNovos;
+
+                alert("Dados copiados com sucesso! Os campos manuais continuam preservados. Você pode editar os valores à vontade antes de salvar.");
+            } catch (error) {
+                console.error("Erro ao puxar dados:", error);
+                alert("Falha ao puxar os dados do sistema.");
+            } finally {
+                btnPuxar.innerHTML = textOrig; btnPuxar.disabled = false;
+            }
+        };
+
+        document.getElementById('btnSalvarEstatisticaVisita').addEventListener('click', async () => {
+            const btn = document.getElementById('btnSalvarEstatisticaVisita');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            btn.disabled = true;
+
+            const payload = {
+                auxiliares: parseInt(document.getElementById('visitaQtdAuxiliares').value) || 0,
+                batizados: parseInt(document.getElementById('visitaQtdBatizados').value) || 0,
+                novos: parseInt(document.getElementById('visitaQtdNovos').value) || 0,
+                repreendidos: parseInt(document.getElementById('visitaQtdRepreendidos').value) || 0,
+                removidos: parseInt(document.getElementById('visitaQtdRemovidos').value) || 0,
+                readmitidos: parseInt(document.getElementById('visitaQtdReadmitidos').value) || 0
+            };
+
+            try {
+                if (currentVisitaEditId) {
+                    await visitasCol.doc(currentVisitaEditId).update(payload);
+                } else {
+                    payload.dataRegistroTimestamp = firebase.firestore.FieldValue.serverTimestamp();
+                    payload.dataRegistroStr = new Date().toLocaleDateString('pt-BR');
+                    await visitasCol.add(payload);
+                }
+                bootstrap.Modal.getInstance(document.getElementById('estatisticaVisitaModal')).hide();
+            } catch (e) {
+                console.error(e); alert("Erro ao salvar relatório de visita.");
+            } finally {
+                btn.innerHTML = 'Salvar Relatório'; btn.disabled = false;
+            }
+        });
+
+        window.excluirEstatisticaVisita = async (id) => {
+            if(confirm("ATENÇÃO: Deseja realmente excluir este relatório estatístico? (Isso não afeta os relatórios mensais)")) {
+                await visitasCol.doc(id).delete();
+            }
+        };
+        
     </script>
 </body>
 </html>
