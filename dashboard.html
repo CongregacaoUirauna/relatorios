@@ -1455,7 +1455,15 @@
                         <input type="number" id="modal_reuniao_qtd" class="form-control" value="${reuniao.quantidade || 0}">
                     </div>
                 `;
-                editModalSaveButton.onclick = () => window.saveReuniao(id);
+                
+                // Força a busca do botão diretamente no HTML para evitar perda de referência na memória
+                const btnSalvarEdicao = document.getElementById('editModalSaveButton');
+                if (btnSalvarEdicao) {
+                    btnSalvarEdicao.onclick = () => window.saveReuniao(id);
+                } else {
+                    alert("Erro crítico: O botão 'Salvar' sumiu do HTML. Verifique a estrutura do editModal.");
+                }
+                
                 editModal.show();
             } catch (error) {
                 console.error("Erro ao abrir modal de reunião: ", error);
