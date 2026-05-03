@@ -1297,14 +1297,13 @@
                 return;
             }
 
-            // 1. Criar a data de forma ultra-segura (evitando bugs de fuso horário UTC)
+            // 1. Criar a data de forma ultra-segura e imutável
             const partes = dataString.split('-'); // Divide "2025-09-15" em ["2025", "09", "15"]
             const dataObjeto = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
             
             const dataTimestamp = firebase.firestore.Timestamp.fromDate(dataObjeto);
-            const dataFormatada = dataObjeto.toLocaleDateString('pt-BR', {
-                day: '2-digit', month: '2-digit', year: 'numeric'
-            });
+            // FORÇA o formato de Lego (DD/MM/YYYY) e ignora a loucura do navegador
+            const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
 
             const novaReuniao = {
                 tipo: tipo,
@@ -1472,11 +1471,12 @@
                     alert("Todos os campos são obrigatórios.");
                     return;
                 }
-                const dataObjeto = new Date(`${dataString}T00:00:00`);
+                
+                const partes = dataString.split('-');
+                const dataObjeto = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
                 const dataTimestamp = firebase.firestore.Timestamp.fromDate(dataObjeto);
-                const dataFormatada = dataObjeto.toLocaleDateString('pt-BR', {
-                    day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC'
-                });
+                // FORÇA o formato exato
+                const dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
                 const updateData = {
                     tipo: tipo,
                     quantidade: quantidade,
@@ -2024,12 +2024,26 @@
                     let assistFim = 0; let qtdFim = 0;
 
                     todasReunioes.forEach(r => {
-                        // Data format PT-BR: DD/MM/YYYY
-                        const parts = r.data.split('/');
-                        if (parts.length === 3) {
-                            const rMes = parseInt(parts[1], 10);
-                            const rAno = parseInt(parts[2], 10);
-                            if (rMes === numMes && rAno == anoAtual) {
+                        let rMes, rAno;
+                        
+                        // Motor Tolerante: Identifica se está salvo com barra (novo) ou traço (antigo corrompido)
+                        if (r.data.includes('/')) {
+                            const parts = r.data.split('/');
+                            if (parts.length === 3) {
+                                rMes = parseInt(parts[1], 10);
+                                rAno = parseInt(parts[2], 10);
+                            }
+                        } else if (r.data.includes('-')) {
+                            const parts = r.data.split('-');
+                            if (parts.length === 3) {
+                                rAno = parseInt(parts[0], 10);
+                                rMes = parseInt(parts[1], 10);
+                            }
+                        }
+
+                        // Garante a leitura transformando tudo em número absoluto
+                        if (rMes && rAno) {
+                            if (rMes === numMes && rAno === parseInt(anoAtual, 10)) {
                                 if (r.tipo === "Meio de Semana") { assistMeio += r.quantidade; qtdMeio++; }
                                 else if (r.tipo === "Fim de Semana") { assistFim += r.quantidade; qtdFim++; }
                             }
