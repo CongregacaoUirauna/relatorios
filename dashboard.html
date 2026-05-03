@@ -2207,7 +2207,7 @@
             if (!anoServico) return alert("Selecione o ano de serviço.");
             
             const viewModalEl = document.getElementById('viewDataModal');
-            const viewModal = new bootstrap.Modal(viewModalEl);
+            const viewModal = bootstrap.Modal.getOrCreateInstance(viewModalEl);
             document.getElementById('viewDataModalLabel').textContent = tituloCartao + " (" + anoServico + ")";
             const body = document.getElementById('viewDataModalBody');
             body.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">Calculando totais...</p></div>';
@@ -2263,7 +2263,7 @@
             if (!anoServico) return alert("Selecione o ano de serviço.");
             
             const viewModalEl = document.getElementById('viewDataModal');
-            const viewModal = new bootstrap.Modal(viewModalEl);
+            const viewModal = bootstrap.Modal.getOrCreateInstance(viewModalEl);
             document.getElementById('viewDataModalLabel').textContent = "Assistência às Reuniões (S-88) - " + anoServico;
             const body = document.getElementById('viewDataModalBody');
             body.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">Analisando reuniões...</p></div>';
@@ -2361,7 +2361,7 @@
 
         window.abrirModalEstatisticaVisita = async (id = null) => {
             currentVisitaEditId = id;
-            const modal = new bootstrap.Modal(document.getElementById('estatisticaVisitaModal'));
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('estatisticaVisitaModal'));
             
             document.getElementById('visitaDataInicio').value = '';
             ['visitaQtdAuxiliares', 'visitaQtdBatizados', 'visitaQtdNovos', 'visitaQtdRepreendidos', 'visitaQtdRemovidos', 'visitaQtdReadmitidos'].forEach(i => document.getElementById(i).value = 0);
